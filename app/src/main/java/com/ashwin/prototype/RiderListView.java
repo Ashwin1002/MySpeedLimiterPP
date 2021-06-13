@@ -78,7 +78,7 @@ public class RiderListView extends AppCompatActivity {
                             public void onClick(View v) {
                                 String visit_log_id = getRef(position).getKey();
 
-                                Intent logintent = new Intent(RiderListView.this, RetriveMapsActivity.class);
+                                Intent logintent = new Intent(RiderListView.this, RetrieveMapsActivity.class);
                                 logintent.putExtra("visit_log_id", visit_log_id);
                                 startActivity(logintent);
                             }

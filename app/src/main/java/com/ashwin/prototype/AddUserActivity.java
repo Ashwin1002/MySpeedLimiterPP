@@ -36,7 +36,7 @@ public class AddUserActivity extends AppCompatActivity {
     Button btn_Signup;
 
     FirebaseDatabase rootNode;
-    DatabaseReference reference;
+    DatabaseReference reference, userRef;
     FirebaseAuth firebaseAuth;
     FirebaseUser  firebaseUser;
     TextView text_sign_title;
@@ -86,6 +86,8 @@ public class AddUserActivity extends AppCompatActivity {
                 String password = passwordEdText.getText().toString();
                 reference = FirebaseDatabase.getInstance().getReference("Rider").child(userId);
 
+
+
 //                SharedPreferences sharedPreferences = getSharedPreferences(ParentDashboard.PARENT_ID, Context.MODE_PRIVATE);
 //                String parentid = sharedPreferences.getString(ParentDashboard.PARENT_KEY, "");
 
@@ -115,6 +117,9 @@ public class AddUserActivity extends AppCompatActivity {
                     hashMap.put("email", email);
                     hashMap.put("phoneno", phoneno);
                     hashMap.put("password", password);
+
+                    userRef = FirebaseDatabase.getInstance().getReference("Rider").child(riderid);
+                    userRef.setValue(hashMap);
 
                     reference.child(riderid).setValue(hashMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override

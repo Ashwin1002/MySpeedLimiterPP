@@ -1,5 +1,6 @@
 package com.ashwin.prototype;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.strictmode.Violation;
@@ -7,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -36,12 +38,14 @@ public class Notifications extends AppCompatActivity {
 
     List<OverSpeedHelperClass> speedlist = new ArrayList<>();
     //    RecyclerViewAdapter adapter;
-    DatabaseReference RootRef, countreference, Dataref;
+    DatabaseReference RootRef, countreference, Dataref, ctRef, ptRef;
     String parentid, receivername;
     RecyclerView TriprecyclerView;
     private String receiverUserID;
     int countSpeed =0;
+    int count =0;
     ProgressBar mProgress;
+    ImageButton imageButton;
 
 
     FirebaseAuth firebaseAuth;
@@ -84,6 +88,15 @@ public class Notifications extends AppCompatActivity {
         smallcount = findViewById(R.id.smallcounterTV);
         imgbtn = findViewById(R.id.imageButtonNot);
 
+        ctRef = FirebaseDatabase.getInstance().getReference().child("SpeedCount").child(receiverUserID);
+
+        imgbtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                suggestion_dialog();
+            }
+        });
+
 
         //for progressbar
         mProgress = (ProgressBar) findViewById(R.id.simpleProgressBar);
@@ -104,7 +117,7 @@ public class Notifications extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 countSpeed = (int) snapshot.getChildrenCount();
                 String counter = Integer.toString(countSpeed);
-                int count = Integer.parseInt(counter);
+                count = Integer.parseInt(counter);
                 countTV.setText(counter + " out of 100");
                 smallcount.setText(counter+ "/100");
                 mProgress.incrementProgressBy(count);
@@ -112,6 +125,8 @@ public class Notifications extends AppCompatActivity {
                 Log.d("com.asjds.eowew", "count: " + mProgress);
 
                 Dataref = FirebaseDatabase.getInstance().getReference().child("SpeedCount").child(receiverUserID);
+                ptRef = FirebaseDatabase.getInstance().getReference().child("SpeedCount").child(parentid);
+
                 HashMap<String, String> hashMap = new HashMap<>();
                 hashMap.put("userId", receiverUserID);
                 hashMap.put("violation_count", counter);
@@ -119,6 +134,8 @@ public class Notifications extends AppCompatActivity {
                 hashMap.put("name", receivername);
 
                 Dataref.setValue(hashMap);
+
+                ptRef.child(receiverUserID).setValue(hashMap);
 
 
 
@@ -188,4 +205,47 @@ public class Notifications extends AppCompatActivity {
             this.violation.setText(violation);
         }
     }
+
+    private void suggestion_dialog(){
+        final AlertDialog.Builder alert = new AlertDialog.Builder(Notifications.this);
+        View mView = getLayoutInflater().inflate(R.layout.sugesstion_dialog, null);
+
+        alert.setView(mView);
+        final AlertDialog alertDialog = alert.create();
+        alertDialog.setCanceledOnTouchOutside(false);
+
+        final TextView txt_limit = (TextView) mView.findViewById(R.id.txt_limit12);
+        final TextView txt_suggest = (TextView) mView.findViewById(R.id.txt_suggest);
+
+        Button btn_cancel = (Button) mView.findViewById(R.id.btn_cancel);
+        Button btn_ok = (Button) mView.findViewById(R.id.btn_ok);
+        String limit = ("Your child name is: " + receivername +". Your child has violation count: "+ count);
+        txt_limit.setText(limit);
+
+        if(count >= 0 && count <= 3){
+            txt_suggest.setText("Your child follows the speed rules. He is in safe zone.");
+        }else if(count >= 4 && count <=6){
+            txt_suggest.setText("Your child has crossed speed limit few times. He is in safe side now but if things get worse, he would be in Danger!");
+        }else {
+            txt_suggest.setText("Your child is overspeeding frequently!. Please tell him to ride safely!!!");
+        }
+
+        btn_cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                alertDialog.dismiss();
+            }
+        });
+
+        btn_ok.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                alertDialog.dismiss();
+            }
+        });
+
+        alertDialog.show();
+    }
+
 }

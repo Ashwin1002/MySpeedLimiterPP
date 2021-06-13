@@ -37,8 +37,8 @@
             android:value="@string/google_maps_key" />
 
         <activity
-            android:name=".RetriveMapsActivity"
-            android:label="@string/title_activity_retrive_maps"></activity>
+            android:name=".RetrieveMapsActivity"
+            android:label="@string/title_activity_retrieve_maps"></activity>
         <activity android:name=".NotificationUserActivity" />
         <activity android:name=".LogViewTripParent" />
         <activity android:name=".BarGraph" />

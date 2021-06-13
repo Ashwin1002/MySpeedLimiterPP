@@ -46,14 +46,17 @@ public class UserProfileActivity extends AppCompatActivity {
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                UserHelperClass userHelperClass = snapshot.getValue(UserHelperClass.class);
-                assert userHelperClass != null;
-                fullNameLabel.setText(userHelperClass.getName());
-                usernameLabel.setText(userHelperClass.getUsername());
-                fullName.getEditText().setText(userHelperClass.getName());
-                email.getEditText().setText(userHelperClass.getEmail());
-                phoneNo.getEditText().setText(userHelperClass.getphoneno());
-                password.getEditText().setText(userHelperClass.getPassword());
+                String fullnamelabel = snapshot.child("name").getValue().toString();
+                fullNameLabel.setText(fullnamelabel);
+                String usernamelabel = snapshot.child("username").getValue().toString();
+                usernameLabel.setText(usernamelabel);
+                fullName.getEditText().setText(fullnamelabel);
+                String email12 = snapshot.child("email").getValue().toString();
+                email.getEditText().setText(email12);
+                String phone = snapshot.child("phoneno").getValue().toString();
+                phoneNo.getEditText().setText(phone);
+                String pass = snapshot.child("password").getValue().toString();
+                password.getEditText().setText(pass);
 
             }
 

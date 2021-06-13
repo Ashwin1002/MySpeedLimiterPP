@@ -5,12 +5,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,7 +20,6 @@ import com.ashwin.prototype.modelclass.CountViolation;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.github.mikephil.charting.charts.BarChart;
-import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
@@ -34,39 +34,45 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class BarGraph extends AppCompatActivity {
 
-
-    ArrayList<OverSpeedHelperClass> yData;
-    DatabaseReference mPostReference, userref;
+    List<CountViolation> userlist = new ArrayList<>();
+    DatabaseReference RootRef, mPostReference;
+    RecyclerView recyclerView;
+    ListView listViewArtists;
+    FirebaseAuth firebaseAuth;
+    FirebaseUser firebaseUser;
+    Query postQuery, query;
     ValueEventListener valueEventListener;
+
     private String countSpeed;
     String rRider, userID, name;
-    Query query;
-    RecyclerView recyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bar_graph);
 
-        BarChart barChart = findViewById(R.id.bargraph);
-        recyclerView = findViewById(R.id.barlist);
+        listViewArtists = (ListView) findViewById(R.id.listViewArtists);
+
+       /* recyclerView = (RecyclerView) findViewById(R.id.recyclerViewRider);
         recyclerView.setHasFixedSize(true);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(linearLayoutManager);
+        recyclerView.setLayoutManager(linearLayoutManager);*/
+
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseUser = firebaseAuth.getCurrentUser();
+        RootRef = FirebaseDatabase.getInstance().getReference().child("SpeedCount");
+        String userId = firebaseUser.getUid();
+        postQuery =RootRef.child(userId);
+        userlist = new ArrayList<>();
 
 
-
-
-        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        rRider = firebaseUser.getUid();
-
-
-        mPostReference = FirebaseDatabase.getInstance().getReference().child("SpeedCount");
-        query = mPostReference.orderByChild("parentID").equalTo(rRider);
-
+        BarChart barChart = findViewById(R.id.bargraph);
+       mPostReference = FirebaseDatabase.getInstance().getReference().child("SpeedCount");
+        query = mPostReference.orderByChild("parentID").equalTo(userId);
 
         query.addValueEventListener(valueEventListener= new ValueEventListener() {
             @Override
@@ -76,12 +82,12 @@ public class BarGraph extends AppCompatActivity {
                 float i = 0;
                 for (DataSnapshot ds : snapshot.getChildren()){
                     i = i+1;
-                   countSpeed = ds.child("violation_count").getValue().toString();
-                   int counter = Integer.parseInt(countSpeed);
-                   name = String.valueOf(ds.child("name").getValue());
-                   visitors.add(new BarEntry(i, counter));
+                    countSpeed = ds.child("violation_count").getValue().toString();
+                    int counter = Integer.parseInt(countSpeed);
+                    name = String.valueOf(ds.child("name").getValue());
+                    visitors.add(new BarEntry(i, counter));
                     ArrayList<BarDataSet> riders = new ArrayList<>();
-                    BarDataSet barDataSet = new BarDataSet(visitors, name);
+                    BarDataSet barDataSet = new BarDataSet(visitors, "Riders");
                     barDataSet.setColors(ColorTemplate.MATERIAL_COLORS);
                     barDataSet.setValueTextColor(Color.BLACK);
                     barDataSet.setValueTextSize(16f);
@@ -93,37 +99,6 @@ public class BarGraph extends AppCompatActivity {
                     barChart.setData(barData);
                     barChart.getDescription().setText("Comparing Speed Violation");
                     barChart.animateY(2000);
-
-
-                    FirebaseRecyclerOptions<CountViolation> options =
-                            new FirebaseRecyclerOptions.Builder<CountViolation>()
-                                    .setQuery(query, CountViolation.class)
-                                    .build();
-
-                    FirebaseRecyclerAdapter<CountViolation, FindFriendViewHolder> adapter =
-                            new FirebaseRecyclerAdapter<CountViolation, FindFriendViewHolder>(options) {
-                                @Override
-                                protected void onBindViewHolder(@NonNull FindFriendViewHolder holder, final int position, @NonNull CountViolation model) {
-
-                                    holder.setNametv(model.getName());
-                                    holder.setIdtv(model.getViolation_count());
-
-
-
-                                }
-
-                                @NonNull
-                                @Override
-                                public FindFriendViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-                                    View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.bargraphlegendlist, viewGroup, false);
-                                    FindFriendViewHolder viewHolder = new FindFriendViewHolder(view);
-                                    return viewHolder;
-                                }
-                            };
-
-                    recyclerView.setAdapter(adapter);
-
-                    adapter.startListening();
 
 
                 }
@@ -143,21 +118,24 @@ public class BarGraph extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
+        RootRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                userlist.clear();
+                for(DataSnapshot postsnapshot : snapshot.getChildren()){
+                    CountViolation violation = postsnapshot.getValue(CountViolation.class);
+                    userlist.add(violation);
+                }
+
+                UserSpeedCountList adapter = new UserSpeedCountList(BarGraph.this, userlist);
+                listViewArtists.setAdapter(adapter);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
-    public static class FindFriendViewHolder extends RecyclerView.ViewHolder {
-        public TextView nametv, idtv;
-
-        public FindFriendViewHolder(@NonNull View itemView) {
-            super(itemView);
-            nametv = itemView.findViewById(R.id.nameTV);
-            idtv = itemView.findViewById(R.id.idTV);
-        }
-        public void setNametv(String nametv){
-            this.nametv.setText(nametv);
-        }
-        public void setIdtv(String idtv) {
-            this.idtv.setText(idtv);
-        }
-    }
 }

@@ -37,4 +37,5 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="title_activity_retrive_maps">Map</string>
+    <string name="title_activity_retrieve_maps">Map</string>
 </resources>

@@ -23,7 +23,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
-public class RetriveMapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class RetrieveMapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private String receiverUserID;
@@ -36,7 +36,7 @@ public class RetriveMapsActivity extends FragmentActivity implements OnMapReadyC
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_retrive_maps);
+        setContentView(R.layout.activity_retrieve_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -48,8 +48,6 @@ public class RetriveMapsActivity extends FragmentActivity implements OnMapReadyC
         firebaseUser = firebaseAuth.getCurrentUser();
         databaseReference = FirebaseDatabase.getInstance().getReference("LocationDetails");
         postQuery = databaseReference.child(receiverUserID);
-
-
     }
 
     /**
@@ -65,14 +63,13 @@ public class RetriveMapsActivity extends FragmentActivity implements OnMapReadyC
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-
-
-         postQuery.addValueEventListener(new ValueEventListener() {
+        postQuery.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
 
                 String latitude1 = snapshot.child("Latitude").getValue().toString();
                 String longitude1 = snapshot.child("Longitude").getValue().toString();
+                String address1 = snapshot.child("Addressline").getValue().toString();
                 Log.d("com.ashwin.prototype", "Lat" + latitude1 + "Lon: " + longitude1);
 
 
@@ -80,10 +77,10 @@ public class RetriveMapsActivity extends FragmentActivity implements OnMapReadyC
                 Double longitude = Double.parseDouble(longitude1);
 
                 LatLng location = new LatLng(latitude, longitude);
-                Toast.makeText(RetriveMapsActivity.this, "UserId:" +receiverUserID + "lat: " + latitude + "lon: " + longitude, Toast.LENGTH_SHORT).show();
+                Toast.makeText(RetrieveMapsActivity.this, "UserId:" +receiverUserID + "lat: " + latitude + "lon: " + longitude, Toast.LENGTH_SHORT).show();
 
-                mMap.addMarker(new MarkerOptions().position(location).title("Last Known Location"));
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 14F));
+                mMap.addMarker(new MarkerOptions().position(location).title("Last Known Location: "+address1));
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15F));
             }
 
             @Override
@@ -91,9 +88,6 @@ public class RetriveMapsActivity extends FragmentActivity implements OnMapReadyC
 
             }
         });
-
-
-
 
     }
 }
