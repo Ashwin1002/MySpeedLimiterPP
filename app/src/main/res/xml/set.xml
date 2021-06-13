@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    <PreferenceCategory
+        android:title="Measurement Unit"
+        >
+
+        <ListPreference
+            android:entries="@array/unitTypes"
+            android:entryValues="@array/unitTypesValue"
+            android:key="unit"
+            android:summary="Choose unit of measurement"
+            android:title="Unit Type" />
+    </PreferenceCategory>
+
+
+</PreferenceScreen>

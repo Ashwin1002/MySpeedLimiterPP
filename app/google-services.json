@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "80857394362",
+    "project_id": "speedlimiterpp",
+    "storage_bucket": "speedlimiterpp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:80857394362:android:b1f861a7197aabb6c4a683",
+        "android_client_info": {
+          "package_name": "com.ashwin.prototype"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "80857394362-efu6pd75064p29ssk9tkb60m3v83uoj7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBAHlqYwyehpGzE5Q7g8rNa3mKe32GnDFc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "80857394362-efu6pd75064p29ssk9tkb60m3v83uoj7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

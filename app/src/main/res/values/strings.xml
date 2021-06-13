@@ -1,0 +1,40 @@
+<resources>
+    <string name="app_name">My Speed Limiter</string>
+
+    <!--Login/Sign Up-->
+    <string name="name_login">Name</string>
+    <string name="email_login">Email</string>
+    <string name="password_login">Password</string>
+    <string name="phone_login">Phone</string>
+    <string name="address_title">Address</string>
+    <string name="login">Login</string>
+    <string name="email">Email</string>
+    <string name="loading_title">Loading...</string>
+    <string name="forgot_password">Forgot Password ?</string>
+    <string name="no_account">Don\'t Have an Account? </string>
+    <string name="sign_up">Create an account</string>
+    <string name="register">Register</string>
+    <string name="already_account">Already Have an Account? </string>
+    <string name="SomethingWrong">"Oops ! some thing went wrong "</string>
+    <string name="error_msg">Oops! some thing went wrong</string>
+
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+
+    <array name="tripname">
+        <item>Ktm to Mustang</item>
+    </array>
+    <string name="tripDes">It was an adventurous trip!</string>
+    <string name="create_a_parent_account">Create a Parent Account</string>
+    <string name="my_speed_limiter">My Speed Limiter</string>
+    <string name="speed_thrills_but_it_also_kills">Speed thrills but It also kills</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="gps_not_found_message">This app requires GPS or Location Service.\n\nWould you like to enable Location Service now?\n</string>
+    <string name="gps_not_found_title">GPS Not Enabled</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="title_activity_retrive_maps">Map</string>
+</resources>
