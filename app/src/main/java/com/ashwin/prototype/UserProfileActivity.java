@@ -20,7 +20,7 @@ import com.google.firebase.database.ValueEventListener;
 
 public class UserProfileActivity extends AppCompatActivity {
 
-    TextInputLayout fullName,email,phoneNo, password;
+    TextInputLayout fullName,email,phoneNo, password, username_profile;
 
     TextView fullNameLabel, usernameLabel;
 
@@ -39,6 +39,7 @@ public class UserProfileActivity extends AppCompatActivity {
         password = findViewById(R.id.password_profile);
         fullNameLabel = findViewById(R.id.fullname_field);
         usernameLabel = findViewById(R.id.username_field);
+        username_profile = findViewById(R.id.username_profile);
 
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
@@ -55,6 +56,8 @@ public class UserProfileActivity extends AppCompatActivity {
                 email.getEditText().setText(email12);
                 String phone = snapshot.child("phoneno").getValue().toString();
                 phoneNo.getEditText().setText(phone);
+                String username_profile1 = snapshot.child("username").getValue().toString();
+                username_profile.getEditText().setText(username_profile1);
                 String pass = snapshot.child("password").getValue().toString();
                 password.getEditText().setText(pass);
 

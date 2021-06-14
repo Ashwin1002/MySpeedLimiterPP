@@ -948,9 +948,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         final EditText tripTitle = (EditText) mView.findViewById(R.id.tripTitle);
         final EditText tripDes = (EditText) mView.findViewById(R.id.tripDes);
 
-
-        final ImageView imageViewAdd = mView.findViewById(R.id.trip_image);
-
         final TextView txtdistance1 = (TextView) mView.findViewById(R.id.txtdistance1);
         final TextView tvMaxSpeed1 = (TextView) mView.findViewById(R.id.tvMaxSpeed2);
         final TextView tvAvgSpeed1 = (TextView) mView.findViewById(R.id.tvAvgSpeed3);

@@ -77,10 +77,6 @@ public class ParentDashboard extends AppCompatActivity implements NavigationView
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
         String parentId = firebaseUser.getUid();
-        SharedPreferences preferences = getSharedPreferences(PARENT_ID, MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(PARENT_KEY, parentId);
-        editor.commit();
 
 
         databaseReference = FirebaseDatabase.getInstance().getReference().child("Parent").child(firebaseUser.getUid());
@@ -91,8 +87,6 @@ public class ParentDashboard extends AppCompatActivity implements NavigationView
                 ParentHelperClass userHelperClass = snapshot.getValue(ParentHelperClass.class);
                 assert userHelperClass != null;
                 dashboarduser.setText("Hi, " +userHelperClass.getUsername()+"!");
-//                parentname.setText(userHelperClass.getName());
-//                parentemail.setText(userHelperClass.getEmail());
             }
 
             @Override

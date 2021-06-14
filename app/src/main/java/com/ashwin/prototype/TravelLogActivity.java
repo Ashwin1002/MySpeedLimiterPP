@@ -18,12 +18,9 @@ import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,8 +61,7 @@ public class TravelLogActivity extends AppCompatActivity {
         String userid = firebaseUser.getUid();
 
 
-
-        Log.d("com.ashwin.prototype", "Firebase userid: " +userid);
+        Log.d("com.ashwin.prototype", "Firebase userid: " + userid);
         //Toast.makeText(TravelLogActivity.this, "userid: "+userid, Toast.LENGTH_SHORT).show();
         RootRef = FirebaseDatabase.getInstance().getReference().child("TravelLog");
 
@@ -89,12 +85,20 @@ public class TravelLogActivity extends AppCompatActivity {
                     @Override
                     protected void onBindViewHolder(@NonNull FindFriendViewHolder holder, final int position, @NonNull SpeedDetailClass model) {
 
+                        holder.setTriptitle(model.getTripT());
+                        holder.setTripDes(model.getTripD());
 
-//                                    String triptitle = ds.child("tripT").getValue().toString();
-//                                    String tripdes = ds.child("tripD").getValue().toString();
-                                    holder.setTriptitle(model.getTripT());
-                                    holder.setTripDes(model.getTripD());
-                        Toast.makeText(TravelLogActivity.this, "Tripname: "+model.getTripT(), Toast.LENGTH_LONG).show();
+                        holder.itemView.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                String visit_log_id = getRef(position).getKey();
+                                String trip_name = model.getTripT();
+                                Intent logintent = new Intent(TravelLogActivity.this, TravelLogEdit.class);
+                                logintent.putExtra("visit_log_id", visit_log_id);
+                                logintent.putExtra("trip_name", trip_name);
+                                startActivity(logintent);
+                            }
+                        });
 
 
 
@@ -126,10 +130,14 @@ public class TravelLogActivity extends AppCompatActivity {
             TripDes = itemView.findViewById(R.id.LogTripDesTV);
 
 
+
+
         }
-        public void setTriptitle(String triptitle){
+
+        public void setTriptitle(String triptitle) {
             this.triptitle.setText(triptitle);
         }
+
         public void setTripDes(String TripDes) {
             this.TripDes.setText(TripDes);
         }
