@@ -38,4 +38,6 @@
     <string name="no">No</string>
     <string name="title_activity_retrive_maps">Map</string>
     <string name="title_activity_retrieve_maps">Map</string>
+    <string name="ok">OK</string>
+    <string name="cancel">CANCEL</string>
 </resources>

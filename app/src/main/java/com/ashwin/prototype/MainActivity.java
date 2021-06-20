@@ -231,12 +231,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         });
 
-/*
+
         TextView headername = navView.findViewById(R.id.header_name);
         TextView headeremail = navView.findViewById(R.id.header_email);
 
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
+
+
         UserRef = FirebaseDatabase.getInstance().getReference("Rider").child(firebaseUser.getUid());
         UserRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -253,19 +255,26 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });
 
-        ltRef = FirebaseDatabase.getInstance().getReference().child("SpeedLimit").child(firebaseUser.getUid());
-        ltRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                String limit = snapshot.child("limit").getValue().toString();
-                tvSpeedLimit.setText(limit);
-            }
+        if(FirebaseAuth.getInstance().getCurrentUser() != null) {
+            ltRef = FirebaseDatabase.getInstance().getReference().child("SpeedLimit").child(firebaseUser.getUid());
+            ltRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if(snapshot.exists()){
+                    String limit = snapshot.child("limit").getValue().toString();
+                    tvSpeedLimit.setText(limit);
+                    }else {
+                        tvSpeedLimit.setText("0");
+                    }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
+                }
 
-            }
-        });*/
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+        }
 
 
     }
@@ -713,22 +722,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void countViolation() {
         firebaseAuth = FirebaseAuth.getInstance();
+        if(FirebaseAuth.getInstance().getCurrentUser() != null) {
         currentuserid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        countreference = FirebaseDatabase.getInstance().getReference().child("SpeedCrossed");
-        countreference.child(currentuserid).addValueEventListener(new ValueEventListener() {
+            countreference = FirebaseDatabase.getInstance().getReference().child("SpeedCrossed");
+            countreference.child(currentuserid).addValueEventListener(new ValueEventListener() {
 
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                countSpeed = (int) snapshot.getChildrenCount();
-                tvOverSpeed.setText(Integer.toString(countSpeed));
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    countSpeed = (int) snapshot.getChildrenCount();
+                    tvOverSpeed.setText(Integer.toString(countSpeed));
 
-            }
+                }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
 
-            }
-        });
+                }
+            });
+        }
     }
 
     private boolean isLocationEnabled(Context mContext) {
@@ -767,28 +778,30 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         rootNode = FirebaseDatabase.getInstance();
         firebaseAuth = FirebaseAuth.getInstance();
         FirebaseUser  rUser = firebaseAuth.getCurrentUser();
-        String userId = rUser.getUid();
-        distreference = rootNode.getReference().child("Distance").child(userId);
-        assert rUser != null;
-        HashMap<String, String> hashMap = new HashMap<>();
-        hashMap.put("userid", userId);
-        hashMap.put("distance", dist);
+        if(FirebaseAuth.getInstance().getCurrentUser() != null) {
+            String userId = rUser.getUid();
+            distreference = rootNode.getReference().child("Distance").child(userId);
+            assert rUser != null;
+            HashMap<String, String> hashMap = new HashMap<>();
+            hashMap.put("userid", userId);
+            hashMap.put("distance", dist);
 
-        distreference.setValue(hashMap);
+            distreference.setValue(hashMap);
 
-        distreference.addValueEventListener(new ValueEventListener() {
+            distreference.addValueEventListener(new ValueEventListener() {
 
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
                     String Tdis = snapshot.child("distance").getValue().toString();
                     txtdistance.setText(Tdis);
-            }
+                }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
 
-            }
-        });
+                }
+            });
+        }
         return distance;
     }
     public double toRadians(double deg) {
@@ -805,30 +818,32 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         rootNode = FirebaseDatabase.getInstance();
         firebaseAuth = FirebaseAuth.getInstance();
         FirebaseUser  rUser = firebaseAuth.getCurrentUser();
-        String userId = rUser.getUid();
-        avgreference = rootNode.getReference().child("AverageSpeed").child(userId);
-        assert rUser != null;
-        HashMap<String, String> hashMap = new HashMap<>();
-        hashMap.put("userid", userId);
-        hashMap.put("AvgSpeed", avgsp);
+        if(FirebaseAuth.getInstance().getCurrentUser() != null) {
+            String userId = rUser.getUid();
+            avgreference = rootNode.getReference().child("AverageSpeed").child(userId);
+            assert rUser != null;
+            HashMap<String, String> hashMap = new HashMap<>();
+            hashMap.put("userid", userId);
+            hashMap.put("AvgSpeed", avgsp);
 
-        avgreference.setValue(hashMap);
+            avgreference.setValue(hashMap);
 
 
-        avgreference.addValueEventListener(new ValueEventListener() {
+            avgreference.addValueEventListener(new ValueEventListener() {
 
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                String Tavg = snapshot.child("AvgSpeed").getValue().toString();
-                tvAvgSpeed.setText(Tavg);
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    String Tavg = snapshot.child("AvgSpeed").getValue().toString();
+                    tvAvgSpeed.setText(Tavg);
 
-            }
+                }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
 
-            }
-        });
+                }
+            });
+        }
         return time;
     }
 
@@ -877,6 +892,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 Intent intent4 = new Intent(MainActivity.this, UserSelect.class);
                 startActivity(intent4);
                 Toast.makeText(MainActivity.this, "Logout Successfully", Toast.LENGTH_SHORT).show();
+                finish();
                 break;
 
 

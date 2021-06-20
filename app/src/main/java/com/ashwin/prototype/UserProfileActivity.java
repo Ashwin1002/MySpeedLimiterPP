@@ -62,7 +62,7 @@ public class UserProfileActivity extends AppCompatActivity {
         update = findViewById(R.id.update_profile);
 
 
-        drawerLayout = findViewById(R.id.drawer_layout);
+       drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
 
         drawerLayout = findViewById(R.id.drawer_layout);
@@ -204,6 +204,7 @@ public class UserProfileActivity extends AppCompatActivity {
                 Intent intent4 = new Intent(UserProfileActivity.this, UserSelect.class);
                 startActivity(intent4);
                 Toast.makeText(UserProfileActivity.this, "Logout Successfully", Toast.LENGTH_SHORT).show();
+                finish();
                 break;
 
 

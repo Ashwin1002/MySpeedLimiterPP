@@ -95,6 +95,7 @@ public class RiderLoginActivity extends AppCompatActivity {
                     Intent intent = new Intent(RiderLoginActivity.this, MainActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
+                    Toast.makeText(RiderLoginActivity.this, "Logged In Successfully!", Toast.LENGTH_SHORT).show();
                     finish();
                 }else {
                     Toast.makeText(RiderLoginActivity.this, task.getException().getMessage(), Toast.LENGTH_SHORT).show();

@@ -37,7 +37,7 @@ public class ParentDashboard extends AppCompatActivity implements NavigationView
     Toolbar toolbar;
     TextView dashboarduser, parentname, parentemail;
 
-    Button seelog;
+    Button seelog, AddUserBtn, notify_panel, traceuser, ReportBtn;
 
     public static final String PARENT_ID = "parentid";
     public static final String PARENT_KEY = "parentname";
@@ -58,6 +58,10 @@ public class ParentDashboard extends AppCompatActivity implements NavigationView
         parentname =findViewById(R.id.parentname);
         parentemail = findViewById(R.id.parentemail);
         seelog = findViewById(R.id.seelog);
+        AddUserBtn = findViewById(R.id.AddUserBtn);
+        notify_panel = findViewById(R.id.notify_panel);
+        traceuser = findViewById(R.id.traceuser);
+        ReportBtn = findViewById(R.id.ReportBtn);
 
         androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
 
@@ -100,10 +104,41 @@ public class ParentDashboard extends AppCompatActivity implements NavigationView
         seelog.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(ParentDashboard.this, "" + parentId,Toast.LENGTH_SHORT).show();
-                Intent intent6 = new Intent(ParentDashboard.this, AddUserActivity.class);
+                Intent intent6 = new Intent(ParentDashboard.this, RiderLogViewActivity.class);
                 intent6.putExtra("parentId", parentId);
                 startActivity(intent6);
+            }
+        });
+
+        AddUserBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent adduserint = new Intent(getApplicationContext(), AddUserActivity.class);
+                startActivity(adduserint);
+            }
+        });
+
+        notify_panel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent notifyint = new Intent(getApplicationContext(), NotificationUserActivity.class);
+                startActivity(notifyint);
+            }
+        });
+
+        traceuser.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent traceint = new Intent(getApplicationContext(), RiderListView.class);
+                startActivity(traceint);
+            }
+        });
+
+        ReportBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent reportint = new Intent(getApplicationContext(), BarGraph.class);
+                startActivity(reportint);
             }
         });
     }

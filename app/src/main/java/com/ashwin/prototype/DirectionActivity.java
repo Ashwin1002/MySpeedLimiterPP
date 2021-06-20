@@ -49,7 +49,7 @@ public class DirectionActivity extends AppCompatActivity implements NavigationVi
         etDestination = findViewById(R.id.et_destination);
         btTrack = findViewById(R.id.bt_track);
 
-        drawerLayout = findViewById(R.id.drawer_layout);
+       drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
         androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
         View navView = navigationView.inflateHeaderView(R.layout.header);
@@ -85,7 +85,7 @@ public class DirectionActivity extends AppCompatActivity implements NavigationVi
             }
         });
 
-        TextView headername = navView.findViewById(R.id.header_name);
+       TextView headername = navView.findViewById(R.id.header_name);
         TextView headeremail = navView.findViewById(R.id.header_email);
 
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
@@ -166,10 +166,11 @@ public class DirectionActivity extends AppCompatActivity implements NavigationVi
                 break;
 
             case R.id.nav_logout:
+                FirebaseAuth.getInstance().signOut();
                 Intent intent4 = new Intent(DirectionActivity.this, UserSelect.class);
                 startActivity(intent4);
-                finish();
                 Toast.makeText(DirectionActivity.this, "Logout Successfully", Toast.LENGTH_SHORT).show();
+                finish();
                 break;
 
 

@@ -258,6 +258,7 @@ public class UserLocationActivity extends AppCompatActivity implements Navigatio
                 Intent intent4 = new Intent(UserLocationActivity.this, UserSelect.class);
                 startActivity(intent4);
                 Toast.makeText(UserLocationActivity.this, "Logout Successfully", Toast.LENGTH_SHORT).show();
+                finish();
                 break;
 
 

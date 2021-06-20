@@ -242,9 +242,9 @@ public class TravelLogActivity extends AppCompatActivity {
             case R.id.nav_logout:
                 FirebaseAuth.getInstance().signOut();
                 Intent intent4 = new Intent(TravelLogActivity.this, UserSelect.class);
-                intent4.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent4);
                 Toast.makeText(TravelLogActivity.this, "Logout Successfully", Toast.LENGTH_SHORT).show();
+                finish();
                 break;
 
 

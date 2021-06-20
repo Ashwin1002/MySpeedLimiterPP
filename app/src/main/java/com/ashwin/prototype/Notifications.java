@@ -1,11 +1,16 @@
 package com.ashwin.prototype;
 
 import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.strictmode.Violation;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -13,6 +18,7 @@ import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Toolbar;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -46,13 +52,15 @@ public class Notifications extends AppCompatActivity {
     int count =0;
     ProgressBar mProgress;
     ImageButton imageButton;
-
-
     FirebaseAuth firebaseAuth;
     FirebaseUser firebaseUser;
     TextView countTV, smallcount;
     ImageButton imgbtn;
     Query postQuery;
+
+    AlertDialog.Builder mAlterDialog;
+
+    Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +95,9 @@ public class Notifications extends AppCompatActivity {
         countTV = findViewById(R.id.countTV);
         smallcount = findViewById(R.id.smallcounterTV);
         imgbtn = findViewById(R.id.imageButtonNot);
+
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         ctRef = FirebaseDatabase.getInstance().getReference().child("SpeedCount").child(receiverUserID);
 
@@ -248,4 +259,41 @@ public class Notifications extends AppCompatActivity {
         alertDialog.show();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.crud_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.delete_nav:
+                mAlterDialog = new AlertDialog.Builder(this);
+                mAlterDialog.setMessage("Are you sure want to reset violation count?")
+                        .setCancelable(false)
+                        .setTitle(getString(R.string.app_name))
+                        .setIcon(R.mipmap.applogo);
+
+                mAlterDialog.setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        FirebaseDatabase.getInstance().getReference().child("SpeedCrossed").child(receiverUserID).removeValue();
+                        Intent intent = new Intent(getApplicationContext(), NotificationUserActivity.class);
+                        startActivity(intent);
+                        Toast.makeText(Notifications.this, "Violation count Successfully reset!", Toast.LENGTH_SHORT).show();
+                    }
+                });
+                mAlterDialog.setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                });
+                mAlterDialog.create().show();
+                break;
+        }
+        return  super.onOptionsItemSelected(item);
+    }
 }
