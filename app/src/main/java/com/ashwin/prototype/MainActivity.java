@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private  String currentuserid;
 
-    DatabaseReference reference, countreference, savereference, distreference, avgreference;
+    DatabaseReference reference, countreference, savereference, distreference, avgreference, UserRef, ltRef;
     LimitClass limitClass;
 
 
@@ -116,6 +116,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
         androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        View navView = navigationView.inflateHeaderView(R.layout.header);
 
         setSupportActionBar(toolbar);
 
@@ -229,6 +230,42 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
         });
+
+/*
+        TextView headername = navView.findViewById(R.id.header_name);
+        TextView headeremail = navView.findViewById(R.id.header_email);
+
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseUser = firebaseAuth.getCurrentUser();
+        UserRef = FirebaseDatabase.getInstance().getReference("Rider").child(firebaseUser.getUid());
+        UserRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                String fullnamelabel = snapshot.child("name").getValue().toString();
+                headername.setText(fullnamelabel);
+                String email12 = snapshot.child("email").getValue().toString();
+                headeremail.setText(email12);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+        ltRef = FirebaseDatabase.getInstance().getReference().child("SpeedLimit").child(firebaseUser.getUid());
+        ltRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                String limit = snapshot.child("limit").getValue().toString();
+                tvSpeedLimit.setText(limit);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });*/
 
 
     }
@@ -1007,10 +1044,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
 
         alertDialog.show();
-    }
-
-    public void btn_resetDialog(View view){
-
     }
 
 

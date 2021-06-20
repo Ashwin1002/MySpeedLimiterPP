@@ -40,6 +40,7 @@ public class AddUserActivity extends AppCompatActivity {
     FirebaseAuth firebaseAuth;
     FirebaseUser  firebaseUser;
     TextView text_sign_title;
+    String userId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,7 +67,7 @@ public class AddUserActivity extends AppCompatActivity {
 
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
-        String userId = firebaseUser.getUid();
+        userId = firebaseUser.getUid();
 
 //                Intent intent = getIntent();
 //                String parentid = intent.getExtras().getString("parentId");
@@ -117,6 +118,7 @@ public class AddUserActivity extends AppCompatActivity {
                     hashMap.put("email", email);
                     hashMap.put("phoneno", phoneno);
                     hashMap.put("password", password);
+                    hashMap.put("parentid", userId);
 
                     userRef = FirebaseDatabase.getInstance().getReference("Rider").child(riderid);
                     userRef.setValue(hashMap);
