@@ -293,6 +293,11 @@ public class Notifications extends AppCompatActivity {
                 });
                 mAlterDialog.create().show();
                 break;
+
+            case  R.id.rules_nav:
+                Intent intent = new Intent(getApplicationContext(), ParentNotiHelper.class);
+                startActivity(intent);
+                break;
         }
         return  super.onOptionsItemSelected(item);
     }
