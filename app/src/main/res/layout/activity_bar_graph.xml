@@ -1,26 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-xmlns:app="http://schemas.android.com/apk/res-auto"
-xmlns:tools="http://schemas.android.com/tools"
-android:layout_width="match_parent"
-android:layout_height="match_parent"
-tools:context=".BarGraph"
-    android:orientation="vertical"
- >
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context=".BarGraph"
+    tools:openDrawer="start">
 
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/nav_view"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        app:menu="@menu/parent_menu" />
 
-     <com.github.mikephil.charting.charts.BarChart
-            android:id="@+id/bargraph"
-            android:layout_width="match_parent"
-            android:layout_height="514dp"/>
-
-    <ListView
-        android:id="@+id/listViewArtists"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="30dp"
-        android:layout_marginTop="7dp"
-        android:layout_below="@+id/textView1"/>
+        android:orientation="vertical">
 
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimary"
+            android:backgroundTint="@null"
+            android:theme="@style/NoActionBar"
+            app:navigationIcon="@drawable/menu"
+            app:titleTextColor="@color/colorPrimary" />
 
-</LinearLayout>
+        <com.github.mikephil.charting.charts.BarChart
+            android:id="@+id/bargraph"
+            android:layout_width="match_parent"
+            android:layout_height="514dp" />
+
+        <ListView
+            android:id="@+id/listViewArtists"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/textView1"
+            android:layout_marginLeft="30dp"
+            android:layout_marginTop="7dp" />
+    </LinearLayout>
+</androidx.drawerlayout.widget.DrawerLayout>

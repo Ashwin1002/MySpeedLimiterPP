@@ -42,7 +42,7 @@ public class ParentDashboard extends AppCompatActivity implements NavigationView
     public static final String PARENT_ID = "parentid";
     public static final String PARENT_KEY = "parentname";
 
-    DatabaseReference databaseReference;
+    DatabaseReference databaseReference, UserRef;
     List<ParentHelperClass> parentHelperClass;
     FirebaseAuth firebaseAuth;
     FirebaseUser firebaseUser;
@@ -76,6 +76,31 @@ public class ParentDashboard extends AppCompatActivity implements NavigationView
         navigationView.setNavigationItemSelectedListener(this);
 
         navigationView.setCheckedItem(R.id.nav_home);
+
+        View navView = navigationView.inflateHeaderView(R.layout.parentheader);
+
+        TextView headername = navView.findViewById(R.id.parentname);
+        TextView headeremail = navView.findViewById(R.id.parentemail);
+
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseUser = firebaseAuth.getCurrentUser();
+
+
+        UserRef = FirebaseDatabase.getInstance().getReference("Parent").child(firebaseUser.getUid());
+        UserRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                String fullnamelabel = snapshot.child("name").getValue().toString();
+                headername.setText(fullnamelabel);
+                String email12 = snapshot.child("email").getValue().toString();
+                headeremail.setText(email12);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
 
 
         firebaseAuth = FirebaseAuth.getInstance();

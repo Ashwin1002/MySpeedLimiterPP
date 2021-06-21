@@ -8,16 +8,14 @@
         android:id="@+id/cardView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="5dp"
         android:layout_marginTop="20dp"
-        android:layout_marginHorizontal="7dp"
         >
-
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="2dp"
+            android:layout_marginLeft="0dp"
+            android:layout_marginBottom="1.5dp"
+            android:padding="15dp"
             android:orientation="vertical">
 
             <LinearLayout
