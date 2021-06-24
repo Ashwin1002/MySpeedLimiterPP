@@ -76,9 +76,11 @@ public class ParentRegisterActivity extends AppCompatActivity {
                 String phoneno = phoneET.getText().toString();
                 String password = passwordET.getText().toString();
 
-                if (TextUtils.isEmpty(name) || TextUtils.isEmpty(username) || TextUtils.isEmpty(email) || TextUtils.isEmpty(phoneno) || TextUtils.isEmpty(password)) {
-                    Toast.makeText(ParentRegisterActivity.this, "All fields are required", Toast.LENGTH_SHORT).show();
-                } else {
+                if(!validateName() |!validatePassword() | !validatePhoneno() | !validateEmail() | !validateUserName())
+                {
+                    Toast.makeText(getApplicationContext(), "Please validate the form properly!", Toast.LENGTH_SHORT).show();
+                    return;
+                }  else {
                     signup(name, username, email, phoneno, password);
                 }
             }
@@ -102,7 +104,7 @@ public class ParentRegisterActivity extends AppCompatActivity {
                     hashMap.put("username", username);
                     hashMap.put("email", email);
                     hashMap.put("phoneno", phoneno);
-                    hashMap.put("password", password);
+//                    hashMap.put("password", password);
 
                     reference1.setValue(hashMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
@@ -123,6 +125,111 @@ public class ParentRegisterActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private  Boolean validateName(){
+        String val = nameET.getText().toString();
+
+        if(val.isEmpty()){
+            nameET.setError("Field cannot be empty");
+            return  false;
+        }
+        else{
+            nameET.setError(null);
+            //nameET.setErrorEnabled(false);
+            return true;
+        }
+    }
+
+    private  Boolean validateUserName(){
+        String val = usernameET.getText().toString();
+        String noWhiteSpace = "\\A\\w{4,20}\\z";
+
+        if(val.isEmpty()){
+            usernameET.setError("Field cannot be empty");
+            return  false;
+        }
+        else if(val.length()>= 15){
+            usernameET.setError("Username too long");
+            return  false;
+        }
+        else if(val.length()>= 5){
+            usernameET.setError("Username too short");
+            return  false;
+        }
+        else if(!val.matches(noWhiteSpace)){
+            usernameET.setError("No white spaces allowed");
+            return  false;
+        }
+        else{
+            usernameET.setError(null);
+            //usernameET.setErrorEnabled(false);
+            return true;
+        }
+    }
+
+    private  Boolean validateEmail(){
+        String val = emailET.getText().toString();
+        String emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+";
+
+        if(val.isEmpty()){
+            emailET.setError("Field cannot be empty");
+            return  false;
+        }
+        else if (!val.matches(emailPattern)) {
+            emailET.setError("Invalid email address");
+            return false;
+        }
+        else{
+            emailET.setError(null);
+            //emailET.setErrorEnabled(false);
+            return true;
+        }
+    }
+
+    private  Boolean validatePhoneno(){
+        String val = phoneET.getText().toString();
+
+        if(val.isEmpty()){
+            phoneET.setError("Field cannot be empty");
+            return  false;
+        }
+        else if(val.length()<= 10 || val.length()>=10){
+            phoneET.setError("Invalid Number!!");
+            return  false;
+        }
+        else{
+            phoneET.setError(null);
+            //phoneET.setErrorEnabled(false);
+            return true;
+        }
+    }
+
+    private  Boolean validatePassword(){
+        String val = passwordET.getText().toString();
+        String passwordVal = "^" +
+                "(?=.*[0-9])" +         //at least 1 digit
+                "(?=.*[a-z])" +         //at least 1 lower case letter
+                "(?=.*[A-Z])" +         //at least 1 upper case letter
+                "(?=.*[a-zA-Z])" +      //any letter
+                "(?=.*[@#$%^&+=])" +    //at least 1 special character
+                "(?=\\S+$)" +           //no white spaces
+                ".{6,}" +               //at least 6 characters
+                "$";
+
+        if(val.isEmpty()){
+            passwordET.setError("Field cannot be empty");
+            return  false;
+        }
+        else if (!val.matches(passwordVal)) {
+            passwordET.setError("Password is too weak. It must contain a uppercase, a lowercase, a number and a special character and must be at least 6 characters");
+            return false;
+        }
+        else{
+            passwordET.setError(null);
+            return true;
+        }
+
     }
 
 }

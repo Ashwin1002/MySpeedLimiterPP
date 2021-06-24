@@ -31,7 +31,6 @@ import java.util.List;
 public class LogViewTripParent extends AppCompatActivity {
 
     List<SpeedDetailClass> speedlist = new ArrayList<>();
-    //    RecyclerViewAdapter adapter;
     DatabaseReference RootRef, UserRef;
     RecyclerView TriprecyclerView;
     private String receiverUserID;

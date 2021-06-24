@@ -15,6 +15,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -93,6 +94,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     FirebaseUser firebaseUser;
 
     private  String currentuserid;
+
+    EditText txt_limit;
 
     DatabaseReference reference, countreference, savereference, distreference, avgreference, UserRef, ltRef;
     LimitClass limitClass;
@@ -262,7 +265,30 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     if(snapshot.exists()){
                     String limit = snapshot.child("limit").getValue().toString();
-                    tvSpeedLimit.setText(limit);
+                    float  f1 = Float.parseFloat(limit);
+//                        tvSpeedLimit.setText(limit);
+                        float multiplier = 3.6f;
+
+                        switch (unitType) {
+                            case 1:
+                                multiplier = 3.6f;
+                                break;
+                            case 2:
+                                multiplier = 2.25f;
+                                break;
+                            case 3:
+                                multiplier = 1.0f;
+                                break;
+
+                            case 4:
+                                multiplier = 1.943856f;
+                                break;
+                        }
+
+                        NumberFormat numberFormat = NumberFormat.getNumberInstance();
+                        numberFormat.setMaximumFractionDigits(0);
+                        tvSpeedLimit.setText(numberFormat.format(f1));
+
                     }else {
                         tvSpeedLimit.setText("0");
                     }
@@ -413,19 +439,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         resultIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
         TaskStackBuilder stackBuilder = null;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             stackBuilder = TaskStackBuilder.create(this);
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             stackBuilder.addParentStack(MainActivity.class);
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             stackBuilder.addNextIntent(resultIntent);
         }
 
         PendingIntent resultPendingIntent = null;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
         }
         mbuilder.setContentIntent(resultPendingIntent);
@@ -677,6 +703,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //limitSpeed = Integer.parseInt(tvSpeedLimit.getText().toString());
         int limit = Integer.parseInt(tvSpeedLimit.getText().toString());
 
+        final long [] vibe = {0,500};
+        final Uri notificationsound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+
         if (speed > limit && above == false) {
             above = true;
             String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
@@ -691,7 +720,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                  String violation = "Speed limit was violated at " + timeStamp +"." + speed + "km/hr was achieved when speed limit was " + limit;
 
-                //inseting into firebase
+                 //Notification showing when crossing the speed limit
+                         NotificationCompat.Builder mbuilder = (NotificationCompat.Builder)
+                                 new NotificationCompat.Builder(getApplicationContext())
+                                         .setSmallIcon(R.drawable.applogo,10)
+                                         .setSound(notificationsound)
+                                         .setVibrate(vibe)
+                                         .setContentTitle("OverSpeed Warning!!")
+                                         .setContentText(violation);
+
+                         NotificationManager notificationManager = (NotificationManager)
+                                 getSystemService(NOTIFICATION_SERVICE);
+                         notificationManager.notify(0,mbuilder.build());
+
+
+
+                 //inseting into firebase
                  rootNode = FirebaseDatabase.getInstance();
                  firebaseAuth = FirebaseAuth.getInstance();
                  FirebaseUser  rUser = firebaseAuth.getCurrentUser();
@@ -897,6 +941,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
             case R.id.nav_share:
+                Intent myIntent = new Intent(Intent.ACTION_SEND);
+                myIntent.setType("text/plain");
+                String sub = "Your Subject";
+                myIntent.putExtra(Intent.EXTRA_SUBJECT,sub);
+                startActivity(Intent.createChooser(myIntent, "Share Using"));
                 Toast.makeText(this, "Shared Successfully!", Toast.LENGTH_SHORT).show();
                 break;
 
@@ -917,7 +966,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         final AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
         View mView = getLayoutInflater().inflate(R.layout.speed_dialog, null);
 
-        final EditText txt_limit = (EditText) mView.findViewById(R.id.txt_limit);
+        txt_limit = (EditText) mView.findViewById(R.id.txt_limit);
         Button btn_cancel = (Button) mView.findViewById(R.id.btn_cancel);
         Button btn_ok = (Button) mView.findViewById(R.id.btn_ok);
 
@@ -937,20 +986,27 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onClick(View v) {
 
-                int limit = Integer.parseInt(txt_limit.getText().toString());
-                String lmt = String.valueOf(limit);
+                if(!validateLimit())
+                {
+                    return;
+                }
+                else {
+                    int limit = Integer.parseInt(txt_limit.getText().toString());
 
-                firebaseAuth = FirebaseAuth.getInstance();
-                FirebaseUser rUser = firebaseAuth.getCurrentUser();
-                String userid = rUser.getUid();;
-                reference = FirebaseDatabase.getInstance().getReference("SpeedLimit").child(userid);
+                    String lmt = String.valueOf(limit);
 
-                assert rUser != null;
-                HashMap<String, String> hashMap = new HashMap<>();
-                hashMap.put("userid", userid);
-                hashMap.put("limit", lmt);
+                    firebaseAuth = FirebaseAuth.getInstance();
+                    FirebaseUser rUser = firebaseAuth.getCurrentUser();
+                    String userid = rUser.getUid();;
+                    reference = FirebaseDatabase.getInstance().getReference("SpeedLimit").child(userid);
 
-                reference.setValue(hashMap);
+                    assert rUser != null;
+                    HashMap<String, String> hashMap = new HashMap<>();
+                    hashMap.put("userid", userid);
+                    hashMap.put("limit", lmt);
+                    reference.setValue(hashMap);
+
+                }
 
                 getdata();
                 alertDialog.dismiss();
@@ -963,8 +1019,32 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
 
         alertDialog.show();
-
     }
+
+    private  Boolean validateLimit(){
+        String val = txt_limit.getText().toString();
+        int val1 = Integer.parseInt(val);
+
+        if(val.isEmpty()){
+            txt_limit.setError("Field cannot be empty");
+            return  false;
+        }
+        /*else if (!val.equals(0)) {
+            txt_limit.setError("Speed limit cannot be 0");
+            return false;
+        }*/
+       else if ((val1 <= 1) | (val1 >= 100)){
+            txt_limit.setError("Speed limit cannot be less than 0 or greater than 100");
+            return false;
+
+        }
+        else{
+            txt_limit.setError(null);
+            //emailET.setErrorEnabled(false);
+            return true;
+        }
+    }
+
     private void getdata() {
         // calling add value event listener method
         // for getting the values from database.

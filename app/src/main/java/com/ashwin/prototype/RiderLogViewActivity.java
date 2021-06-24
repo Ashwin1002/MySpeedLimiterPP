@@ -163,6 +163,11 @@ public class RiderLogViewActivity extends AppCompatActivity implements Navigatio
                 break;
 
             case R.id.nav_share:
+                Intent myIntent = new Intent(Intent.ACTION_SEND);
+                myIntent.setType("text/plain");
+                String sub = "Your Subject";
+                myIntent.putExtra(Intent.EXTRA_SUBJECT,sub);
+                startActivity(Intent.createChooser(myIntent, "Share Using"));
                 Toast.makeText(this, "Shared Successfully!", Toast.LENGTH_SHORT).show();
                 break;
 

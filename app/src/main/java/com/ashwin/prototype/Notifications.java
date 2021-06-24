@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.strictmode.Violation;
 import android.util.Log;
@@ -43,8 +44,7 @@ import java.util.List;
 public class Notifications extends AppCompatActivity {
 
     List<OverSpeedHelperClass> speedlist = new ArrayList<>();
-    //    RecyclerViewAdapter adapter;
-    DatabaseReference RootRef, countreference, Dataref, ctRef, ptRef;
+    DatabaseReference RootRef, countreference, Dataref, ctRef, ptRef, dialRef;
     String parentid, receivername;
     RecyclerView TriprecyclerView;
     private String receiverUserID;
@@ -251,6 +251,21 @@ public class Notifications extends AppCompatActivity {
         btn_ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_DIAL);
+                dialRef = FirebaseDatabase.getInstance().getReference().child("Rider").child(receiverUserID);
+                dialRef.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        String phone = snapshot.child("phoneno").getValue().toString();
+                        intent.setData(Uri.parse("tel: "+ phone));
+                        startActivity(intent);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
 
                 alertDialog.dismiss();
             }

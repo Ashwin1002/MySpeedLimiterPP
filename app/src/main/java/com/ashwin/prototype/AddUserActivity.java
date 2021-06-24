@@ -144,9 +144,12 @@ public class AddUserActivity extends AppCompatActivity implements NavigationView
 //                String parentid = sharedPreferences.getString(ParentDashboard.PARENT_KEY, "");
 
 
-                if (TextUtils.isEmpty(name) || TextUtils.isEmpty(username) || TextUtils.isEmpty(email) || TextUtils.isEmpty(phoneno) || TextUtils.isEmpty(password)) {
-                    Toast.makeText(AddUserActivity.this, "All fields are required", Toast.LENGTH_SHORT).show();
-                } else {
+                if(!validateName() |!validatePassword() | !validatePhoneno() | !validateEmail() | !validateUserName())
+                {
+                    Toast.makeText(getApplicationContext(), "Please validate the form properly!", Toast.LENGTH_SHORT).show();
+                    return;
+
+                }  else {
                     signup(name, username, email, phoneno, password);
                 }
             }
@@ -168,7 +171,7 @@ public class AddUserActivity extends AppCompatActivity implements NavigationView
                     hashMap.put("username", username);
                     hashMap.put("email", email);
                     hashMap.put("phoneno", phoneno);
-                    hashMap.put("password", password);
+//                    hashMap.put("password", password);
                     hashMap.put("parentid", userId);
 
                     userRef = FirebaseDatabase.getInstance().getReference("Rider").child(riderid);
@@ -192,6 +195,111 @@ public class AddUserActivity extends AppCompatActivity implements NavigationView
             }
         });
 
+
+    }
+
+    private  Boolean validateName(){
+        String val = nameEdText.getText().toString();
+
+        if(val.isEmpty()){
+            nameEdText.setError("Field cannot be empty");
+            return  false;
+        }
+        else{
+            nameEdText.setError(null);
+            //nameET.setErrorEnabled(false);
+            return true;
+        }
+    }
+
+    private  Boolean validateUserName(){
+        String val = usernameEdText.getText().toString();
+        String noWhiteSpace = "\\A\\w{4,20}\\z";
+
+        if(val.isEmpty()){
+            usernameEdText.setError("Field cannot be empty");
+            return  false;
+        }
+        else if(val.length()>= 15){
+            usernameEdText.setError("Username too long");
+            return  false;
+        }
+        else if(val.length()>= 5){
+            usernameEdText.setError("Username too short");
+            return  false;
+        }
+        else if(!val.matches(noWhiteSpace)){
+            usernameEdText.setError("No white spaces allowed");
+            return  false;
+        }
+        else{
+            usernameEdText.setError(null);
+            //usernameET.setErrorEnabled(false);
+            return true;
+        }
+    }
+
+    private  Boolean validateEmail(){
+        String val = emailEdText.getText().toString();
+        String emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+";
+
+        if(val.isEmpty()){
+            emailEdText.setError("Field cannot be empty");
+            return  false;
+        }
+        else if (!val.matches(emailPattern)) {
+            emailEdText.setError("Invalid email address");
+            return false;
+        }
+        else{
+            emailEdText.setError(null);
+            //emailET.setErrorEnabled(false);
+            return true;
+        }
+    }
+
+    private  Boolean validatePhoneno(){
+        String val = phoneEdText.getText().toString();
+
+        if(val.isEmpty()){
+            phoneEdText.setError("Field cannot be empty");
+            return  false;
+        }
+        else if(val.length()<= 10 || val.length()>=10){
+            phoneEdText.setError("Invalid Number!!");
+            return  false;
+        }
+        else{
+            phoneEdText.setError(null);
+            //phoneET.setErrorEnabled(false);
+            return true;
+        }
+    }
+
+    private  Boolean validatePassword(){
+        String val = passwordEdText.getText().toString();
+        String passwordVal = "^" +
+                "(?=.*[0-9])" +         //at least 1 digit
+                "(?=.*[a-z])" +         //at least 1 lower case letter
+                "(?=.*[A-Z])" +         //at least 1 upper case letter
+                "(?=.*[a-zA-Z])" +      //any letter
+                "(?=.*[@#$%^&+=])" +    //at least 1 special character
+                "(?=\\S+$)" +           //no white spaces
+                ".{6,}" +               //at least 6 characters
+                "$";
+
+        if(val.isEmpty()){
+            passwordEdText.setError("Field cannot be empty");
+            return  false;
+        }
+        else if (!val.matches(passwordVal)) {
+            passwordEdText.setError("Password is too weak. It must contain a uppercase, a lowercase, a number and a special character and must be at least 6 characters");
+            return false;
+        }
+        else{
+            passwordEdText.setError(null);
+            return true;
+        }
 
     }
 
@@ -248,6 +356,11 @@ public class AddUserActivity extends AppCompatActivity implements NavigationView
                 break;
 
             case R.id.nav_share:
+                Intent myIntent = new Intent(Intent.ACTION_SEND);
+                myIntent.setType("text/plain");
+                String sub = "Your Subject";
+                myIntent.putExtra(Intent.EXTRA_SUBJECT,sub);
+                startActivity(Intent.createChooser(myIntent, "Share Using"));
                 Toast.makeText(this, "Shared Successfully!", Toast.LENGTH_SHORT).show();
                 break;
 
