@@ -165,6 +165,11 @@ public class DirectionActivity extends AppCompatActivity implements NavigationVi
                 startActivity(intent3);
                 break;
 
+            case R.id.nav_location:
+                Intent intent6 = new Intent(DirectionActivity.this, UserLocationActivity.class);
+                startActivity(intent6);
+                break;
+
             case R.id.nav_logout:
                 FirebaseAuth.getInstance().signOut();
                 Intent intent4 = new Intent(DirectionActivity.this, UserSelect.class);

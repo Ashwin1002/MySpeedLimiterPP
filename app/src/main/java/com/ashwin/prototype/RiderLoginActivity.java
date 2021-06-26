@@ -85,6 +85,8 @@ public class RiderLoginActivity extends AppCompatActivity {
         customer_login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                progressDialog.setCancelable(false);
+                progressDialog.show();
                 final String userEnteredUsername = txtLoginEmail.getText().toString().trim();
                 final String userEnteredPassword = txtLoginPassword.getText().toString().trim();
                 if (txtLoginEmail.getText().toString().equalsIgnoreCase("")) {
@@ -133,8 +135,6 @@ public class RiderLoginActivity extends AppCompatActivity {
     }
 
     private void login(String userEnteredUsername, String userEnteredPassword) {
-        progressDialog.setCancelable(false);
-        progressDialog.show();
         firebaseAuth.signInWithEmailAndPassword(userEnteredUsername, userEnteredPassword).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
@@ -145,6 +145,7 @@ public class RiderLoginActivity extends AppCompatActivity {
                     Toast.makeText(RiderLoginActivity.this, "Logged In Successfully!", Toast.LENGTH_SHORT).show();
                     finish();
                 }else {
+                    progressDialog.dismiss();
                     Toast.makeText(RiderLoginActivity.this, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                 }
             }

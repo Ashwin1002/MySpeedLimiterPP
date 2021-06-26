@@ -137,7 +137,6 @@ public class BarGraph extends AppCompatActivity implements NavigationView.OnNavi
                     barDataSet.setValueTextColor(Color.BLACK);
                     barDataSet.setValueTextSize(16f);
 
-
                     BarData barData = new BarData( barDataSet);
 
                     barChart.setFitBars(true);

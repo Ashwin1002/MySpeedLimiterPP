@@ -1,5 +1,6 @@
 package com.ashwin.prototype;
 
+import android.animation.ValueAnimator;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -14,6 +15,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
@@ -112,8 +114,9 @@ public class Notifications extends AppCompatActivity {
         //for progressbar
         mProgress = (ProgressBar) findViewById(R.id.simpleProgressBar);
 
+
         mProgress.setProgress(0);
-        mProgress.setMax(10);
+        mProgress.setMax(100);
         
         countViolation();
         
@@ -233,12 +236,15 @@ public class Notifications extends AppCompatActivity {
         String limit = ("Your child name is: " + receivername +". Your child has violation count: "+ count);
         txt_limit.setText(limit);
 
-        if(count >= 0 && count <= 3){
+        if(count >= 0 && count <= 25){
             txt_suggest.setText("Your child follows the speed rules. He is in safe zone.");
-        }else if(count >= 4 && count <=6){
+        }else if(count >= 25 && count <=50){
             txt_suggest.setText("Your child has crossed speed limit few times. He is in safe side now but if things get worse, he would be in Danger!");
-        }else {
-            txt_suggest.setText("Your child is overspeeding frequently!. Please tell him to ride safely!!!");
+        }else if(count >=51 && count <=75){
+            txt_suggest.setText("Your child's way of riding is unsafe. He might get injured in serious accident, Please tell him to ride safely!!!");
+        }
+        else{
+            txt_suggest.setText("Your child is overspeeding frequently!.He is in Danger Zone. Please tell him to ride safely!!!");
         }
 
         btn_cancel.setOnClickListener(new View.OnClickListener() {

@@ -118,6 +118,8 @@ public class TravelLogEdit extends AppCompatActivity {
                     @Override
                     public void onSuccess(Object o) {
                         Toast.makeText(TravelLogEdit.this, "Data updated Successfully!", Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(TravelLogEdit.this, TravelLogActivity.class);
+                        startActivity(intent);
                     }
                 });
 
