@@ -38,6 +38,10 @@
                     android:icon="@drawable/profile_icon"
                     android:title="Profile" />
                 <item
+                    android:id="@+id/nav_reset"
+                    android:icon="@drawable/password_icon"
+                    android:title="Reset Password" />
+                <item
                     android:id="@+id/nav_logout"
                     android:icon="@drawable/logout_icon"
                     android:title="Logout" />

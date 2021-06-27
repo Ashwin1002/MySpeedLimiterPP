@@ -253,6 +253,11 @@ public class UserLocationActivity extends AppCompatActivity implements Navigatio
                 startActivity(intent3);
                 break;
 
+            case  R.id.nav_reset:
+                Intent intent1 = new Intent(getApplicationContext(), RiderResetPasswordActivity.class);
+                startActivity(intent1);
+                break;
+
             case R.id.nav_logout:
                 FirebaseAuth.getInstance().signOut();
                 Intent intent4 = new Intent(UserLocationActivity.this, UserSelect.class);

@@ -347,6 +347,11 @@ public class AddUserActivity extends AppCompatActivity implements NavigationView
                 startActivity(intent3);
                 break;
 
+            case R.id.nav_reset:
+                Intent intent1 = new Intent(getApplicationContext(), ParentResetPasswordActivity.class);
+                startActivity(intent1);
+                break;
+
             case R.id.nav_logout:
                 FirebaseAuth.getInstance().signOut();
                 Intent intent5 = new Intent(AddUserActivity.this, UserSelect.class);

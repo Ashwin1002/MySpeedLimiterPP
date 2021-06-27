@@ -170,10 +170,10 @@
 
                     <TextView
                         android:id="@+id/txtdistance"
-                        android:layout_width="wrap_content"
+                        android:layout_width="@dimen/_80sdp"
                         android:layout_height="22dp"
                         android:hint="0.0 Km"
-                        android:layout_marginRight="30dp"
+
                         android:textColor="@color/white"
                         android:textColorHint="@color/white"
                         android:textSize="18sp" />

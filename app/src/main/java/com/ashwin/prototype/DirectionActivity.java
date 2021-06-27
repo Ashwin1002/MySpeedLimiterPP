@@ -170,6 +170,11 @@ public class DirectionActivity extends AppCompatActivity implements NavigationVi
                 startActivity(intent6);
                 break;
 
+            case  R.id.nav_reset:
+                Intent intent1 = new Intent(getApplicationContext(), RiderResetPasswordActivity.class);
+                startActivity(intent1);
+                break;
+
             case R.id.nav_logout:
                 FirebaseAuth.getInstance().signOut();
                 Intent intent4 = new Intent(DirectionActivity.this, UserSelect.class);

@@ -32,7 +32,7 @@ import java.util.HashMap;
 
 public class UserProfileActivity extends AppCompatActivity {
 
-    TextInputLayout fullName,email,phoneNo, password, username_profile;
+    TextInputLayout fullName,email,phoneNo, username_profile;
 
     Button update;
 
@@ -54,7 +54,6 @@ public class UserProfileActivity extends AppCompatActivity {
         fullName = findViewById(R.id.full_name_profile);
         email = findViewById(R.id.email_profile);
         phoneNo = findViewById(R.id.phone_no_profile);
-        password = findViewById(R.id.password_profile);
         fullNameLabel = findViewById(R.id.fullname_field);
         usernameLabel = findViewById(R.id.username_field);
         username_profile = findViewById(R.id.username_profile);
@@ -118,8 +117,6 @@ public class UserProfileActivity extends AppCompatActivity {
                 phoneNo.getEditText().setText(phone);
                 String username_profile1 = snapshot.child("username").getValue().toString();
                 username_profile.getEditText().setText(username_profile1);
-                String pass = snapshot.child("password").getValue().toString();
-                password.getEditText().setText(pass);
 
             }
 
@@ -138,13 +135,11 @@ public class UserProfileActivity extends AppCompatActivity {
                 String email1 = email.getEditText().getText().toString();
                 String phone = phoneNo.getEditText().getText().toString();
                 String username = username_profile.getEditText().getText().toString();
-                String password1 = password.getEditText().getText().toString();
                 HashMap hashMap = new HashMap();
                 hashMap.put("name", name);
                 hashMap.put("email", email1);
                 hashMap.put("phoneno", phone);
                 hashMap.put("username", username);
-                hashMap.put("password", password1);
                 
                 DatabaseReference upRef = databaseReference;
 
@@ -196,6 +191,11 @@ public class UserProfileActivity extends AppCompatActivity {
                 break;
 
             case R.id.nav_profile:
+                break;
+
+            case  R.id.nav_reset:
+                Intent intent1 = new Intent(getApplicationContext(), RiderResetPasswordActivity.class);
+                startActivity(intent1);
                 break;
 
             case R.id.nav_logout:

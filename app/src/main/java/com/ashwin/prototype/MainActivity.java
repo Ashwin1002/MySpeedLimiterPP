@@ -13,15 +13,18 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Typeface;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.media.MediaPlayer;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.PowerManager;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
@@ -37,12 +40,14 @@ import android.widget.Toast;
 import android.widget.Toolbar;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
@@ -75,7 +80,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     double distance = 0, time1;
     float multiplier = 3.6f;
     float filtSpeed;
-
     private MainActivity activity;
     Context context;
     private int countSpeed = 0, counts;
@@ -103,6 +107,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     NavigationView navigationView;
     Toolbar toolbar;
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -141,6 +146,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         tvSpeedLimit = (TextView) findViewById(R.id.tvSpeedLimit);
         tvOverSpeed = (TextView) findViewById(R.id.tvOverSpeed);
         tvlatlon = (TextView) findViewById(R.id.tvLatitude);
+
+
+        Typeface font = Typeface.createFromAsset(getAssets(), "fonts/lcdn.ttf");
+        tvSpeed.setTypeface(font);
+        txtdistance.setTypeface(font);
+        tvHeading.setTypeface(font);
+        tvAccuracy.setTypeface(font);
+        tvMaxSpeed.setTypeface(font);
+        tvAvgSpeed.setTypeface(font);
+        tvlatlon.setTypeface(font);
+        tvSpeedLimit.setTypeface(font);
+        tvOverSpeed.setTypeface(font);
 
         activity = this;
         counts = 0;
@@ -647,7 +664,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         final Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
         final long[] vibe = {0, 500};
         final Uri notificationsound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        Ringtone ring = RingtoneManager.getRingtone(getApplicationContext(), notificationsound);
+        /*MediaPlayer player = MediaPlayer.create(this, notificationsound);
+        Ringtone ring = RingtoneManager.getRingtone(getApplicationContext(), notificationsound);*/
+
         if (speed > limit && above == false) {
             above = true;
             String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
@@ -669,18 +688,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 vibrator.vibrate(pattern, 0);// 0 mean repeat forever, -1 not repeat
 
                 String violation = "Speed limit was violated at " + saveCurrentDate + " on " + saveCurrentTime + ". " + speed + "km/hr was achieved when speed limit was " + limit;
-
-                //plays a notification sound
-                ring.isLooping();
-
-
-                //inseting into firebase
-                rootNode = FirebaseDatabase.getInstance();
-                firebaseAuth = FirebaseAuth.getInstance();
-                FirebaseUser rUser = firebaseAuth.getCurrentUser();
-                String userId = rUser.getUid();
-                String email = rUser.getEmail();
-                countreference = rootNode.getReference().child("SpeedCrossed").child(userId);
 
                 String CHANNEL_ID = "my_channel_01";// The id of the channel.
                 NotificationManager notificationManager = (NotificationManager)
@@ -705,6 +712,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                 notificationManager.notify(1, mbuilder.build());
 
+                //inseting into firebase
+                rootNode = FirebaseDatabase.getInstance();
+                firebaseAuth = FirebaseAuth.getInstance();
+                FirebaseUser rUser = firebaseAuth.getCurrentUser();
+                String userId = rUser.getUid();
+                String email = rUser.getEmail();
+                countreference = rootNode.getReference().child("SpeedCrossed").child(userId);
+
                 assert rUser != null;
                 HashMap<String, String> hashMap = new HashMap<>();
                 hashMap.put("userId", userId);
@@ -721,10 +736,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         } else if (speed < limit && above == true)
             above = false;
-        ring.stop();
-        final long[] pattern = {2000, 1000};
-        vibrator.vibrate(pattern, -1);
-
+            final long[] pattern = {2000, 1000};
+            vibrator.vibrate(pattern, -1);
 
     }
 
@@ -901,6 +914,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case R.id.nav_profile:
                 Intent intent3 = new Intent(MainActivity.this, UserProfileActivity.class);
                 startActivity(intent3);
+                break;
+
+            case  R.id.nav_reset:
+                Intent intent1 = new Intent(getApplicationContext(), RiderResetPasswordActivity.class);
+                startActivity(intent1);
                 break;
 
             case R.id.nav_logout:

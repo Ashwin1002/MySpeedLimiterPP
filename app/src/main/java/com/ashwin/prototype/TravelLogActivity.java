@@ -238,6 +238,11 @@ public class TravelLogActivity extends AppCompatActivity {
                 startActivity(intent3);
                 break;
 
+            case  R.id.nav_reset:
+                Intent intent1 = new Intent(getApplicationContext(), RiderResetPasswordActivity.class);
+                startActivity(intent1);
+                break;
+
             case R.id.nav_logout:
                 FirebaseAuth.getInstance().signOut();
                 Intent intent4 = new Intent(TravelLogActivity.this, UserSelect.class);

@@ -214,6 +214,11 @@ public class RiderListView extends AppCompatActivity implements NavigationView.O
                 startActivity(intent3);
                 break;
 
+            case R.id.nav_reset:
+                Intent intent1 = new Intent(getApplicationContext(), ParentResetPasswordActivity.class);
+                startActivity(intent1);
+                break;
+
             case R.id.nav_logout:
                 FirebaseAuth.getInstance().signOut();
                 Intent intent5 = new Intent(RiderListView.this, UserSelect.class);

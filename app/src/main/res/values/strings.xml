@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">My Speed Limiter</string>
+    <string name="app_name">MySpeedLimiter</string>
 
     <!--Login/Sign Up-->
     <string name="name_login">Name</string>
