@@ -84,9 +84,9 @@ public class ParentLoginActivity extends AppCompatActivity {
                 final String userEnteredUsername = txtLoginEmail.getText().toString().trim();
                 final String userEnteredPassword = txtLoginPassword.getText().toString().trim();
                 if (txtLoginEmail.getText().toString().equalsIgnoreCase("")) {
-                    txtLoginEmail.setError("Enter your Username");
+                    txtLoginEmail.setError("Email field cannot be Empty");
                 } else if(txtLoginPassword.getText().toString().equalsIgnoreCase("")) {
-                    txtLoginPassword.setError("Enter your password");
+                    txtLoginPassword.setError("Password field cannot be Empty");
                 }else {
 
                     login(userEnteredUsername, userEnteredPassword);
@@ -119,7 +119,7 @@ public class ParentLoginActivity extends AppCompatActivity {
                                 }).addOnFailureListener(new OnFailureListener() {
                                     @Override
                                     public void onFailure(@NonNull Exception e) {
-                                        Toast.makeText(ParentLoginActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(ParentLoginActivity.this,"Invalid Email", Toast.LENGTH_SHORT).show();
                                     }
                                 });
                             }
@@ -141,7 +141,7 @@ public class ParentLoginActivity extends AppCompatActivity {
                     finish();
                 }else {
                     progressDialog.dismiss();
-                    Toast.makeText(ParentLoginActivity.this, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ParentLoginActivity.this, "User Email or Password do not Match!", Toast.LENGTH_SHORT).show();
                 }
             }
         });

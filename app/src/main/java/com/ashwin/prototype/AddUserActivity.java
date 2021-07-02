@@ -1,5 +1,6 @@
 package com.ashwin.prototype;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -51,6 +52,7 @@ public class AddUserActivity extends AppCompatActivity implements NavigationView
     FirebaseUser  firebaseUser;
     TextView text_sign_title;
     String userId;
+    ProgressDialog progressDialog;
 
     //menu variable declaration
     DrawerLayout drawerLayout;
@@ -86,6 +88,9 @@ public class AddUserActivity extends AppCompatActivity implements NavigationView
 
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
+
+        progressDialog = new ProgressDialog(AddUserActivity.this);
+        progressDialog.setMessage("Please wait");
 
         androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
 
@@ -130,6 +135,8 @@ public class AddUserActivity extends AppCompatActivity implements NavigationView
         btn_Signup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                progressDialog.setCancelable(false);
+                progressDialog.show();
                 //Get all the values
                 String name = nameEdText.getText().toString();
                 String username = usernameEdText.getText().toString();
@@ -176,20 +183,28 @@ public class AddUserActivity extends AppCompatActivity implements NavigationView
 
                     userRef = FirebaseDatabase.getInstance().getReference("Rider").child(riderid);
                     userRef.setValue(hashMap);
+                    reference.child(riderid).setValue(hashMap);
+                    Toast.makeText(AddUserActivity.this, "User added Successfully!, Redirecting to Rider Page!", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                    finish();
 
-                    reference.child(riderid).setValue(hashMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    /*reference.child(riderid).setValue(hashMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             if (task.isSuccessful()) {
-                                Toast.makeText(AddUserActivity.this, "User added Successfully!", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(AddUserActivity.this, "User added Successfully!, Please Sign out and Login Again!", Toast.LENGTH_SHORT).show();
+                                finish();
                             } else {
                                 Toast.makeText(AddUserActivity.this, Objects.requireNonNull(task.getException()).getMessage(), Toast.LENGTH_SHORT).show();
                             }
                         }
-                    });
+                    });*/
 
 
                 } else {
+                    progressDialog.dismiss();
                     Toast.makeText(AddUserActivity.this, Objects.requireNonNull(task.getException()).getMessage(), Toast.LENGTH_SHORT).show();
                 }
             }
@@ -224,7 +239,7 @@ public class AddUserActivity extends AppCompatActivity implements NavigationView
             usernameEdText.setError("Username too long");
             return  false;
         }
-        else if(val.length()>= 5){
+        else if(val.length()<= 5){
             usernameEdText.setError("Username too short");
             return  false;
         }
@@ -265,7 +280,7 @@ public class AddUserActivity extends AppCompatActivity implements NavigationView
             phoneEdText.setError("Field cannot be empty");
             return  false;
         }
-        else if(val.length()<= 10 || val.length()>=10){
+        else if(val.length()< 10 || val.length()>10){
             phoneEdText.setError("Invalid Number!!");
             return  false;
         }

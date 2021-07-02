@@ -1,15 +1,12 @@
 package com.ashwin.prototype;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
@@ -18,6 +15,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -33,23 +33,20 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.HashMap;
-import java.util.Map;
-
 public class RiderLoginActivity extends AppCompatActivity {
 
     Button navRegister;
-    EditText txtLoginEmail,txtLoginPassword;
+    EditText txtLoginEmail, txtLoginPassword;
     Button customer_login;
-    DatabaseReference reference;
+    DatabaseReference reference1;
     ProgressDialog progressDialog;
     private FirebaseAuth firebaseAuth;
     TextView ForgotPass;
     AlertDialog.Builder reset_alert;
     LayoutInflater inflater;
+
+    DatabaseReference dbRef;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,10 +87,12 @@ public class RiderLoginActivity extends AppCompatActivity {
                 final String userEnteredUsername = txtLoginEmail.getText().toString().trim();
                 final String userEnteredPassword = txtLoginPassword.getText().toString().trim();
                 if (txtLoginEmail.getText().toString().equalsIgnoreCase("")) {
-                    txtLoginEmail.setError("Enter your Username");
-                } else if(txtLoginPassword.getText().toString().equalsIgnoreCase("")) {
-                    txtLoginPassword.setError("Enter your password");
-                }else {
+                    txtLoginEmail.setError("Email field cannot be Empty");
+                    progressDialog.dismiss();
+                } else if (txtLoginPassword.getText().toString().equalsIgnoreCase("")) {
+                    txtLoginPassword.setError("Password field cannot be Empty");
+                    progressDialog.dismiss();
+                } else {
                     login(userEnteredUsername, userEnteredPassword);
                 }
             }
@@ -112,7 +111,7 @@ public class RiderLoginActivity extends AppCompatActivity {
                             public void onClick(DialogInterface dialog, int which) {
                                 //validate the email address
                                 EditText email = view.findViewById(R.id.reset_email_pop);
-                                if (email.getText().toString().isEmpty()){
+                                if (email.getText().toString().isEmpty()) {
                                     email.setError("Email required");
                                     return;
                                 }
@@ -120,7 +119,7 @@ public class RiderLoginActivity extends AppCompatActivity {
                                 firebaseAuth.sendPasswordResetEmail(email.getText().toString()).addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void aVoid) {
-                                        Toast.makeText(RiderLoginActivity.this, "Reset link sent. Please check your email!!",Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(RiderLoginActivity.this, "Reset link sent. Please check your email!!", Toast.LENGTH_SHORT).show();
                                     }
                                 }).addOnFailureListener(new OnFailureListener() {
                                     @Override
@@ -134,7 +133,9 @@ public class RiderLoginActivity extends AppCompatActivity {
         });
     }
 
+
     private void login(String userEnteredUsername, String userEnteredPassword) {
+
         firebaseAuth.signInWithEmailAndPassword(userEnteredUsername, userEnteredPassword).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
@@ -144,10 +145,12 @@ public class RiderLoginActivity extends AppCompatActivity {
                     startActivity(intent);
                     Toast.makeText(RiderLoginActivity.this, "Logged In Successfully!", Toast.LENGTH_SHORT).show();
                     finish();
-                }else {
                     progressDialog.dismiss();
-                    Toast.makeText(RiderLoginActivity.this, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                } else {
+                    progressDialog.dismiss();
+                    Toast.makeText(RiderLoginActivity.this, "Email and Password do not Match!", Toast.LENGTH_SHORT).show();
                 }
+
             }
         });
     }
@@ -167,8 +170,8 @@ public class RiderLoginActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         //directly redirect to mainactivity
-        if (FirebaseAuth.getInstance().getCurrentUser() != null){
-            startActivity(new Intent(getApplicationContext(),MainActivity.class));
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            startActivity(new Intent(getApplicationContext(), MainActivity.class));
             finish();
         }
     }

@@ -162,7 +162,7 @@ public class BarGraph extends AppCompatActivity implements NavigationView.OnNavi
     protected void onStart() {
         super.onStart();
         userlist.clear();
-        RootRef.addValueEventListener(new ValueEventListener() {
+        query.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
 

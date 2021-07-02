@@ -113,6 +113,7 @@ public class RiderRegisterActivity extends AppCompatActivity {
                                 Intent intent = new Intent(RiderRegisterActivity.this, RiderLoginActivity.class);
                                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                                 startActivity(intent);
+                                Toast.makeText(getApplicationContext(), "Registered Successfully!", Toast.LENGTH_SHORT).show();
                             } else {
                                 Toast.makeText(RiderRegisterActivity.this, Objects.requireNonNull(task.getException()).getMessage(), Toast.LENGTH_SHORT).show();
                             }
@@ -151,18 +152,15 @@ public class RiderRegisterActivity extends AppCompatActivity {
             usernameEdText.setError("Field cannot be empty");
             return  false;
         }
+        else if(val.length()<= 5){
+            usernameEdText.setError("Username too short");
+            return  false;
+        }
         else if(val.length()>= 15){
             usernameEdText.setError("Username too long");
             return  false;
         }
-        else if(val.length()>= 5){
-            usernameEdText.setError("Username too short");
-            return  false;
-        }
-        else if(!val.matches(noWhiteSpace)){
-            usernameEdText.setError("No white spaces allowed");
-            return  false;
-        }
+
         else{
             usernameEdText.setError(null);
             //usernameEdText.setErrorEnabled(false);
@@ -196,7 +194,7 @@ public class RiderRegisterActivity extends AppCompatActivity {
             phoneEdText.setError("Field cannot be empty");
             return  false;
         }
-        else if(val.length()<= 10 || val.length()>=10){
+        else if(val.length()< 10 || val.length()>10){
             phoneEdText.setError("Invalid Number!!");
             return  false;
         }

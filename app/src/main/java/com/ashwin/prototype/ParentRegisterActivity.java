@@ -113,6 +113,7 @@ public class ParentRegisterActivity extends AppCompatActivity {
                                 Intent intent = new Intent(ParentRegisterActivity.this, ParentLoginActivity.class);
                                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                                 startActivity(intent);
+                                Toast.makeText(getApplicationContext(), "Registered Successfully!", Toast.LENGTH_SHORT).show();
                             } else {
                                 Toast.makeText(ParentRegisterActivity.this, Objects.requireNonNull(task.getException()).getMessage(), Toast.LENGTH_SHORT).show();
                             }
@@ -153,7 +154,7 @@ public class ParentRegisterActivity extends AppCompatActivity {
             usernameET.setError("Username too long");
             return  false;
         }
-        else if(val.length()>= 5){
+        else if(val.length()<= 5){
             usernameET.setError("Username too short");
             return  false;
         }
@@ -194,7 +195,7 @@ public class ParentRegisterActivity extends AppCompatActivity {
             phoneET.setError("Field cannot be empty");
             return  false;
         }
-        else if(val.length()<= 10 || val.length()>=10){
+        else if(val.length()< 10 || val.length()>10){
             phoneET.setError("Invalid Number!!");
             return  false;
         }
