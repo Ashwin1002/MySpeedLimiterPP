@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="15dp">
@@ -8,45 +8,71 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Important Notice!"
-        android:textSize="25sp"
-        android:textStyle="bold"
+        android:text="Important Notice!!!"
+        android:textAlignment="center"
         android:textAllCaps="true"
-        android:textAlignment="center" />
+        android:textSize="25sp"
+        android:textStyle="bold" />
 
     <TextView
-
+        android:id="@+id/txt_limit12"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Parent Suggestion for riders.... Please Ride Slow, Someone is wating for you at home"
         android:layout_marginTop="18dp"
+        android:hint="Parent Suggestion for riders.... Please Ride Slow, Someone is wating for you at home"
         android:padding="6dp"
-        android:textSize="20dp"
-        android:id="@+id/txt_limit"/>
+        android:textSize="18dp" />
+
     <LinearLayout
-        android:layout_marginTop="12dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:orientation="vertical">
+        <TextView
+            android:layout_width="150dp"
+            android:layout_gravity="center"
+            android:textStyle="bold"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="Suggestion"
+            android:textAllCaps="true"
+            android:padding="6dp"
+            android:textSize="22dp" />
 
-        <Button
+        <TextView
+            android:id="@+id/txt_suggest"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:backgroundTint="@color/colorPrimaryDark"
-            android:text="Call(9810573847)"
+            android:hint="Parent Suggestion for riders.... Please Ride Slow, Someone is wating for you at home"
+            android:padding="6dp"
+            android:textSize="18dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp">
+
+        <Button
             android:id="@+id/btn_ok"
-            android:textColor="@color/white"
-            android:textSize="18sp"
-            android:layout_weight="1"/>
-
-        <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:backgroundTint="@color/colorPrimaryDark"
+            android:text="Call Now!"
+            android:textColor="@color/white"
+            android:textSize="18sp" />
+
+        <Button
+            android:id="@+id/btn_cancel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:backgroundTint="@color/colorPrimaryDark"
             android:text="Cancel"
             android:textColor="@color/white"
-            android:textSize="18sp"
-            android:id="@+id/btn_cancel"
-            android:layout_weight="1"/>
+            android:textSize="18sp" />
+
     </LinearLayout>
 
 </LinearLayout>

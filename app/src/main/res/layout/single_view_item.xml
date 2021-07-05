@@ -9,15 +9,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="10dp"
-        android:layout_margin="20dp"
-
+        android:layout_margin="1dp"
         >
-
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="2dp"
+            android:padding="15dp"
             android:orientation="vertical">
 
             <LinearLayout
@@ -26,7 +25,7 @@
                 android:orientation="horizontal"
                 >
                 <TextView
-                    android:layout_width="80dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Trip Title: "
                     android:layout_marginLeft="5dp"
@@ -36,7 +35,7 @@
 
                 <TextView
                     android:id="@+id/LogTripTV"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:hint="Trip title..."
                     android:textAlignment="textStart"
@@ -52,7 +51,7 @@
                 android:orientation="horizontal"
                 >
                 <TextView
-                    android:layout_width="100dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Description: "
                     android:layout_marginLeft="5dp"
@@ -62,7 +61,7 @@
 
                 <TextView
                     android:id="@+id/LogTripDesTV"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:hint="Trip Description..."
                     android:textAlignment="textStart"

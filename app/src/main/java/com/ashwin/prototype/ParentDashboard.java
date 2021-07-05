@@ -37,12 +37,12 @@ public class ParentDashboard extends AppCompatActivity implements NavigationView
     Toolbar toolbar;
     TextView dashboarduser, parentname, parentemail;
 
-    Button seelog;
+    Button seelog, AddUserBtn, notify_panel, traceuser, ReportBtn;
 
     public static final String PARENT_ID = "parentid";
     public static final String PARENT_KEY = "parentname";
 
-    DatabaseReference databaseReference;
+    DatabaseReference databaseReference, UserRef;
     List<ParentHelperClass> parentHelperClass;
     FirebaseAuth firebaseAuth;
     FirebaseUser firebaseUser;
@@ -58,6 +58,10 @@ public class ParentDashboard extends AppCompatActivity implements NavigationView
         parentname =findViewById(R.id.parentname);
         parentemail = findViewById(R.id.parentemail);
         seelog = findViewById(R.id.seelog);
+        AddUserBtn = findViewById(R.id.AddUserBtn);
+        notify_panel = findViewById(R.id.notify_panel);
+        traceuser = findViewById(R.id.traceuser);
+        ReportBtn = findViewById(R.id.ReportBtn);
 
         androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
 
@@ -73,14 +77,35 @@ public class ParentDashboard extends AppCompatActivity implements NavigationView
 
         navigationView.setCheckedItem(R.id.nav_home);
 
+        View navView = navigationView.inflateHeaderView(R.layout.parentheader);
+
+        TextView headername = navView.findViewById(R.id.parentname);
+        TextView headeremail = navView.findViewById(R.id.parentemail);
+
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseUser = firebaseAuth.getCurrentUser();
+
+
+        UserRef = FirebaseDatabase.getInstance().getReference("Parent").child(firebaseUser.getUid());
+        UserRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                String fullnamelabel = snapshot.child("name").getValue().toString();
+                headername.setText(fullnamelabel);
+                String email12 = snapshot.child("email").getValue().toString();
+                headeremail.setText(email12);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
 
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
         String parentId = firebaseUser.getUid();
-        SharedPreferences preferences = getSharedPreferences(PARENT_ID, MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(PARENT_KEY, parentId);
-        editor.commit();
 
 
         databaseReference = FirebaseDatabase.getInstance().getReference().child("Parent").child(firebaseUser.getUid());
@@ -91,8 +116,6 @@ public class ParentDashboard extends AppCompatActivity implements NavigationView
                 ParentHelperClass userHelperClass = snapshot.getValue(ParentHelperClass.class);
                 assert userHelperClass != null;
                 dashboarduser.setText("Hi, " +userHelperClass.getUsername()+"!");
-//                parentname.setText(userHelperClass.getName());
-//                parentemail.setText(userHelperClass.getEmail());
             }
 
             @Override
@@ -106,10 +129,41 @@ public class ParentDashboard extends AppCompatActivity implements NavigationView
         seelog.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(ParentDashboard.this, "" + parentId,Toast.LENGTH_SHORT).show();
-                Intent intent6 = new Intent(ParentDashboard.this, AddUserActivity.class);
+                Intent intent6 = new Intent(ParentDashboard.this, RiderLogViewActivity.class);
                 intent6.putExtra("parentId", parentId);
                 startActivity(intent6);
+            }
+        });
+
+        AddUserBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent adduserint = new Intent(getApplicationContext(), AddUserActivity.class);
+                startActivity(adduserint);
+            }
+        });
+
+        notify_panel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent notifyint = new Intent(getApplicationContext(), NotificationUserActivity.class);
+                startActivity(notifyint);
+            }
+        });
+
+        traceuser.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent traceint = new Intent(getApplicationContext(), RiderListView.class);
+                startActivity(traceint);
+            }
+        });
+
+        ReportBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent reportint = new Intent(getApplicationContext(), BarGraph.class);
+                startActivity(reportint);
             }
         });
     }
@@ -158,6 +212,11 @@ public class ParentDashboard extends AppCompatActivity implements NavigationView
                 startActivity(intent3);
                 break;
 
+            case R.id.nav_reset:
+                Intent intent1 = new Intent(getApplicationContext(), ParentResetPasswordActivity.class);
+                startActivity(intent1);
+                break;
+
             case R.id.nav_logout:
                 FirebaseAuth.getInstance().signOut();
                 Intent intent5 = new Intent(ParentDashboard.this, UserSelect.class);
@@ -167,6 +226,11 @@ public class ParentDashboard extends AppCompatActivity implements NavigationView
                 break;
 
             case R.id.nav_share:
+                Intent myIntent = new Intent(Intent.ACTION_SEND);
+                myIntent.setType("text/plain");
+                String sub = "Your Subject";
+                myIntent.putExtra(Intent.EXTRA_SUBJECT,sub);
+                startActivity(Intent.createChooser(myIntent, "Share Using"));
                 Toast.makeText(this, "Shared Successfully!", Toast.LENGTH_SHORT).show();
                 break;
 

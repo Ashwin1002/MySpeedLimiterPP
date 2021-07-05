@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">My Speed Limiter</string>
+    <string name="app_name">MySpeedLimiter</string>
 
     <!--Login/Sign Up-->
     <string name="name_login">Name</string>
@@ -37,4 +37,7 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="title_activity_retrive_maps">Map</string>
+    <string name="title_activity_retrieve_maps">Map</string>
+    <string name="ok">OK</string>
+    <string name="cancel">CANCEL</string>
 </resources>

@@ -14,10 +14,18 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
 
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import javax.xml.transform.URIResolver;
 
@@ -41,9 +49,10 @@ public class DirectionActivity extends AppCompatActivity implements NavigationVi
         etDestination = findViewById(R.id.et_destination);
         btTrack = findViewById(R.id.bt_track);
 
-        drawerLayout = findViewById(R.id.drawer_layout);
+       drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
         androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        View navView = navigationView.inflateHeaderView(R.layout.header);
 
         setSupportActionBar(toolbar);
 
@@ -73,6 +82,27 @@ public class DirectionActivity extends AppCompatActivity implements NavigationVi
                     //Display track
                     DisplayTrack(sSource, sDestination);
                 }
+            }
+        });
+
+       TextView headername = navView.findViewById(R.id.header_name);
+        TextView headeremail = navView.findViewById(R.id.header_email);
+
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+        DatabaseReference UserRef = FirebaseDatabase.getInstance().getReference("Rider").child(firebaseUser.getUid());
+        UserRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                String fullnamelabel = snapshot.child("name").getValue().toString();
+                headername.setText(fullnamelabel);
+                String email12 = snapshot.child("email").getValue().toString();
+                headeremail.setText(email12);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
             }
         });
     }
@@ -135,15 +165,31 @@ public class DirectionActivity extends AppCompatActivity implements NavigationVi
                 startActivity(intent3);
                 break;
 
+            case R.id.nav_location:
+                Intent intent6 = new Intent(DirectionActivity.this, UserLocationActivity.class);
+                startActivity(intent6);
+                break;
+
+            case  R.id.nav_reset:
+                Intent intent1 = new Intent(getApplicationContext(), RiderResetPasswordActivity.class);
+                startActivity(intent1);
+                break;
+
             case R.id.nav_logout:
+                FirebaseAuth.getInstance().signOut();
                 Intent intent4 = new Intent(DirectionActivity.this, UserSelect.class);
                 startActivity(intent4);
-                finish();
                 Toast.makeText(DirectionActivity.this, "Logout Successfully", Toast.LENGTH_SHORT).show();
+                finish();
                 break;
 
 
             case R.id.nav_share:
+                Intent myIntent = new Intent(Intent.ACTION_SEND);
+                myIntent.setType("text/plain");
+                String sub = "Your Subject";
+                myIntent.putExtra(Intent.EXTRA_SUBJECT,sub);
+                startActivity(Intent.createChooser(myIntent, "Share Using"));
                 Toast.makeText(this, "Shared Successfully!", Toast.LENGTH_SHORT).show();
                 break;
 

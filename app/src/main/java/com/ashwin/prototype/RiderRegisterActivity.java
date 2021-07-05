@@ -78,9 +78,11 @@ public class RiderRegisterActivity extends AppCompatActivity {
                 String phoneno = phoneEdText.getText().toString();
                 String password = passwordEdText.getText().toString();
 
-                if (TextUtils.isEmpty(name) || TextUtils.isEmpty(username) || TextUtils.isEmpty(email) || TextUtils.isEmpty(phoneno) || TextUtils.isEmpty(password)) {
-                    Toast.makeText(RiderRegisterActivity.this, "All fields are required", Toast.LENGTH_SHORT).show();
-                } else {
+                if(!validateName() |!validatePassword() | !validatePhoneno() | !validateEmail() | !validateUserName())
+                {
+                    Toast.makeText(getApplicationContext(), "Please validate the form properly!", Toast.LENGTH_SHORT).show();
+                    return;
+                }  else {
                     signup(name, username, email, phoneno, password);
                 }
             }
@@ -103,7 +105,6 @@ public class RiderRegisterActivity extends AppCompatActivity {
                     hashMap.put("username", username);
                     hashMap.put("email", email);
                     hashMap.put("phoneno", phoneno);
-                    hashMap.put("password", password);
 
                     reference.setValue(hashMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
@@ -112,6 +113,7 @@ public class RiderRegisterActivity extends AppCompatActivity {
                                 Intent intent = new Intent(RiderRegisterActivity.this, RiderLoginActivity.class);
                                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                                 startActivity(intent);
+                                Toast.makeText(getApplicationContext(), "Registered Successfully!", Toast.LENGTH_SHORT).show();
                             } else {
                                 Toast.makeText(RiderRegisterActivity.this, Objects.requireNonNull(task.getException()).getMessage(), Toast.LENGTH_SHORT).show();
                             }
@@ -125,6 +127,108 @@ public class RiderRegisterActivity extends AppCompatActivity {
             }
         });
 
+
+    }
+
+    private  Boolean validateName(){
+        String val = nameEdText.getText().toString();
+
+        if(val.isEmpty()){
+            nameEdText.setError("Field cannot be empty");
+            return  false;
+        }
+        else{
+            nameEdText.setError(null);
+            //nameEdText.setErrorEnabled(false);
+            return true;
+        }
+    }
+
+    private  Boolean validateUserName(){
+        String val = usernameEdText.getText().toString();
+        String noWhiteSpace = "\\A\\w{4,20}\\z";
+
+        if(val.isEmpty()){
+            usernameEdText.setError("Field cannot be empty");
+            return  false;
+        }
+        else if(val.length()<= 5){
+            usernameEdText.setError("Username too short");
+            return  false;
+        }
+        else if(val.length()>= 15){
+            usernameEdText.setError("Username too long");
+            return  false;
+        }
+
+        else{
+            usernameEdText.setError(null);
+            //usernameEdText.setErrorEnabled(false);
+            return true;
+        }
+    }
+
+    private  Boolean validateEmail(){
+        String val = emailEdText.getText().toString();
+        String emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+";
+
+        if(val.isEmpty()){
+            emailEdText.setError("Field cannot be empty");
+            return  false;
+        }
+        else if (!val.matches(emailPattern)) {
+            emailEdText.setError("Invalid email address");
+            return false;
+        }
+        else{
+            emailEdText.setError(null);
+            //emailEdText.setErrorEnabled(false);
+            return true;
+        }
+    }
+
+    private  Boolean validatePhoneno(){
+        String val = phoneEdText.getText().toString();
+
+        if(val.isEmpty()){
+            phoneEdText.setError("Field cannot be empty");
+            return  false;
+        }
+        else if(val.length()< 10 || val.length()>10){
+            phoneEdText.setError("Invalid Number!!");
+            return  false;
+        }
+        else{
+            phoneEdText.setError(null);
+            //phoneEdText.setErrorEnabled(false);
+            return true;
+        }
+    }
+
+    private  Boolean validatePassword(){
+        String val = passwordEdText.getText().toString();
+        String passwordVal = "^" +
+                "(?=.*[0-9])" +         //at least 1 digit
+                "(?=.*[a-z])" +         //at least 1 lower case letter
+                "(?=.*[A-Z])" +         //at least 1 upper case letter
+                "(?=.*[a-zA-Z])" +      //any letter
+                "(?=.*[@#$%^&+=])" +    //at least 1 special character
+                "(?=\\S+$)" +           //no white spaces
+                ".{6,}" +               //at least 6 characters
+                "$";
+
+        if(val.isEmpty()){
+            passwordEdText.setError("Field cannot be empty");
+            return  false;
+        }
+        else if (!val.matches(passwordVal)) {
+            passwordEdText.setError("Password is too weak. It must contain a uppercase, a lowercase, a number and a special character and must be at least 6 characters");
+            return false;
+        }
+        else{
+            passwordEdText.setError(null);
+            return true;
+        }
 
     }
 }

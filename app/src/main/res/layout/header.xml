@@ -17,6 +17,7 @@
         android:layout_height="wrap_content"
         android:fontFamily="@font/baloo"
         android:hint="Your Full Name"
+        android:id="@+id/header_name"
         android:textSize="24sp" />
 
     <TextView
@@ -24,6 +25,7 @@
         android:layout_height="wrap_content"
         android:fontFamily="@font/aclonica"
         android:hint="Your email address"
+        android:id="@+id/header_email"
         android:textSize="14sp" />
 
 

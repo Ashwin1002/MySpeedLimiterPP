@@ -17,7 +17,7 @@
         android:layout_height="wrap_content"
         android:fontFamily="@font/baloo"
         android:id="@+id/parentname"
-        android:text="Parent"
+        android:hint="Parent"
         android:textSize="24sp" />
 
     <TextView

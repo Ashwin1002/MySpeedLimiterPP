@@ -1,35 +1,46 @@
 package com.ashwin.prototype;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.text.Html;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.Toolbar;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
-public class UserLocationActivity extends AppCompatActivity {
+public class UserLocationActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     //Initialise variable
     Button btlocation;
@@ -37,7 +48,13 @@ public class UserLocationActivity extends AppCompatActivity {
     FusedLocationProviderClient fusedLocationProviderClient;
     FirebaseDatabase rootnode;
     FirebaseAuth firebaseAuth;
-    DatabaseReference savereference;
+    FirebaseUser firebaseUser;
+    DatabaseReference savereference, UserRef;
+
+    //Menu Variable Initialised
+    DrawerLayout drawerLayout;
+    NavigationView navigationView;
+    Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +68,45 @@ public class UserLocationActivity extends AppCompatActivity {
         textView3 = findViewById(R.id.text_view3);
         textView4 = findViewById(R.id.text_view4);
         textView5 = findViewById(R.id.text_view5);
+
+
+
+        drawerLayout = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.nav_view);
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+
+        setSupportActionBar(toolbar);
+        View navView = navigationView.inflateHeaderView(R.layout.header);
+
+        navigationView.bringToFront();
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+
+        navigationView.setNavigationItemSelectedListener(this);
+
+        navigationView.setCheckedItem(R.id.nav_location);
+
+        TextView headername = navView.findViewById(R.id.header_name);
+        TextView headeremail = navView.findViewById(R.id.header_email);
+
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseUser = firebaseAuth.getCurrentUser();
+        UserRef = FirebaseDatabase.getInstance().getReference("Rider").child(firebaseUser.getUid());
+        UserRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                String fullnamelabel = snapshot.child("name").getValue().toString();
+                headername.setText(fullnamelabel);
+                String email12 = snapshot.child("email").getValue().toString();
+                headeremail.setText(email12);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
 
         //Initialise fusedlocationproviderClient
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -155,5 +211,77 @@ public class UserLocationActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    public void onBackPressed() {
+
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.nav_home:
+                Intent intent = new Intent(UserLocationActivity.this, MainActivity.class);
+                startActivity(intent);
+                break;
+            case R.id.nav_convert:
+                Intent intent5 = new Intent();
+                intent5.setClass(UserLocationActivity.this, SettingsActivity.class);
+                startActivity(intent5);
+                break;
+            case R.id.nav_directions:
+                Intent intent9 = new Intent(UserLocationActivity.this, DirectionActivity.class);
+                startActivity(intent9);
+                break;
+
+            case R.id.nav_log:
+                Intent intent6 = new Intent(UserLocationActivity.this, TravelLogActivity.class);
+                startActivity(intent6);
+                break;
+
+            case R.id.nav_location:
+
+                break;
+
+            case R.id.nav_profile:
+                Intent intent3 = new Intent(UserLocationActivity.this, UserProfileActivity.class);
+                startActivity(intent3);
+                break;
+
+            case  R.id.nav_reset:
+                Intent intent1 = new Intent(getApplicationContext(), RiderResetPasswordActivity.class);
+                startActivity(intent1);
+                break;
+
+            case R.id.nav_logout:
+                FirebaseAuth.getInstance().signOut();
+                Intent intent4 = new Intent(UserLocationActivity.this, UserSelect.class);
+                startActivity(intent4);
+                Toast.makeText(UserLocationActivity.this, "Logout Successfully", Toast.LENGTH_SHORT).show();
+                finish();
+                break;
+
+
+            case R.id.nav_share:
+                Intent myIntent = new Intent(Intent.ACTION_SEND);
+                myIntent.setType("text/plain");
+                String sub = "Your Subject";
+                myIntent.putExtra(Intent.EXTRA_SUBJECT,sub);
+                startActivity(Intent.createChooser(myIntent, "Share Using"));
+                Toast.makeText(this, "Shared Successfully!", Toast.LENGTH_SHORT).show();
+                break;
+
+            case R.id.nav_rate:
+                Toast.makeText(this, "Thank You for Rating Us", Toast.LENGTH_SHORT).show();
+                break;
+        }
+
+        drawerLayout.closeDrawer(GravityCompat.START);
+        return true;
     }
 }

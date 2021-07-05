@@ -4,6 +4,7 @@ package com.ashwin.prototype;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
@@ -12,13 +13,18 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Typeface;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.media.MediaPlayer;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.PowerManager;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
@@ -29,36 +35,32 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 
-import java.io.File;
 import java.sql.Timestamp;
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -76,25 +78,27 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private NotificationManager mnotice;
     private double maxSpeed = -100.0;
     double distance = 0, time1;
-    double avg = 0;
-    private double limitSpeed;
-
+    float multiplier = 3.6f;
+    float filtSpeed;
     private MainActivity activity;
     Context context;
-    private int countSpeed =0, counts;
+    private int countSpeed = 0, counts;
 
     private SharedPreferences prefs;
 
-    long start,finish,time;//variables that will help me count time in milliseconds
+    long start, finish, time;//variables that will help me count time in milliseconds
     boolean above;
 
     FirebaseDatabase rootNode;
     FirebaseAuth firebaseAuth;
     FirebaseUser firebaseUser;
 
-    private  String currentuserid;
+    private String currentuserid;
+    EditText tripTitle, tripDes;
 
-    DatabaseReference reference, countreference, savereference, distreference, avgreference;
+    EditText txt_limit;
+
+    DatabaseReference reference, countreference, savereference, distreference, avgreference, UserRef, ltRef;
     LimitClass limitClass;
 
 
@@ -103,6 +107,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     NavigationView navigationView;
     Toolbar toolbar;
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -116,6 +121,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
         androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        View navView = navigationView.inflateHeaderView(R.layout.header);
 
         setSupportActionBar(toolbar);
 
@@ -133,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         tvMaxSpeed = (TextView) findViewById(R.id.tvMaxSpeed);
         txtdistance = (TextView) findViewById(R.id.txtdistance);
         tvUnit = (TextView) findViewById(R.id.tvUnitc);
-        tvAvgSpeed = (TextView)findViewById(R.id.tvAvgSpeed);
+        tvAvgSpeed = (TextView) findViewById(R.id.tvAvgSpeed);
 
         tvAccuracy = (TextView) findViewById(R.id.tvAccuracy);
         tvHeading = (TextView) findViewById(R.id.tvHeading);
@@ -141,7 +147,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         tvOverSpeed = (TextView) findViewById(R.id.tvOverSpeed);
         tvlatlon = (TextView) findViewById(R.id.tvLatitude);
 
-        double lat1, lon1;
+
+        Typeface font = Typeface.createFromAsset(getAssets(), "fonts/lcdn.ttf");
+        tvSpeed.setTypeface(font);
+        txtdistance.setTypeface(font);
+        tvHeading.setTypeface(font);
+        tvAccuracy.setTypeface(font);
+        tvMaxSpeed.setTypeface(font);
+        tvAvgSpeed.setTypeface(font);
+        tvlatlon.setTypeface(font);
+        tvSpeedLimit.setTypeface(font);
+        tvOverSpeed.setTypeface(font);
 
         activity = this;
         counts = 0;
@@ -158,16 +174,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         if (savedInstanceState != null) {
             maxSpeed = savedInstanceState.getDouble("maxspeed", -100.0);
-            limitSpeed = savedInstanceState.getDouble("limitspeed", -100.0);
 
         }
 
         if (!this.isLocationEnabled(this)) {
-
-
             //show dialog if Location Services is not enabled
-
-
             android.app.AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle(R.string.gps_not_found_title);  // GPS not found
             builder.setMessage(R.string.gps_not_found_message); // Want to enable?
@@ -183,19 +194,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             //if no - bring user to selecting Static Location Activity
             builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     Toast.makeText(activity, "Please enable Location-based service / GPS", Toast.LENGTH_LONG).show();
-
-
                 }
-
-
             });
             builder.create().show();
-
-
         }
 
         int permissionCheck = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_APN_SETTINGS);
@@ -206,7 +210,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             //permission is granted and you can change APN settings
         }
 
-
+        //Function for keeping the screen on while using the app
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
         @SuppressLint("InvalidWakeLockTag") PowerManager.WakeLock wakeLock = pm.newWakeLock(
                 PowerManager.SCREEN_DIM_WAKE_LOCK, "My wakelook");
@@ -214,9 +218,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
 
+        //FUNCTION for getting all the details regarding speed
         new SpeedTask(this).execute("string");
 
-
+        //Listener when clicked opens SettingActivity
         tvSpeed.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -230,7 +235,46 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         });
 
+        //FUNCTION for showing the name and email of logged in Users
+        TextView headername = navView.findViewById(R.id.header_name);
+        TextView headeremail = navView.findViewById(R.id.header_email);
 
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseUser = firebaseAuth.getCurrentUser();
+        UserRef = FirebaseDatabase.getInstance().getReference("Rider").child(firebaseUser.getUid());
+        UserRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                String fullnamelabel = snapshot.child("name").getValue().toString();
+                headername.setText(fullnamelabel);
+                String email12 = snapshot.child("email").getValue().toString();
+                headeremail.setText(email12);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+        //FUNCTION for retrieving Speed Limit from the firebase
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            ltRef = FirebaseDatabase.getInstance().getReference().child("SpeedLimit").child(firebaseUser.getUid());
+            ltRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.exists()) {
+                        String limit = snapshot.child("limit").getValue().toString();
+                        tvSpeedLimit.setText(limit);
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+        }
     }
 
 
@@ -258,7 +302,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
 
-
     protected void onRestoreInstanceState(Bundle bundle) {
 
         super.onRestoreInstanceState(bundle);
@@ -269,6 +312,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onStart() {
         super.onStart();
+
     }
 
     protected void onResume() {
@@ -315,10 +359,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     protected void onStop() {
         super.onStop();
-
-
         displayNotification();
-
 
     }
 
@@ -337,15 +378,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         }
 
-//        float tempLimitspeed = 0.0f;
-//        try {
-//            tempLimitspeed = Float.parseFloat(tvSpeedLimit.getText().toString());
-//        } catch (java.lang.NumberFormatException nfe) {
-//            tempLimitspeed = 0.0f;
-//        }
-
         prefs.edit().putFloat("maxSpeed", tempMaxpeed);
-//        prefs.edit().putFloat("limitSpeed", tempLimitspeed);
 
     }
 
@@ -353,39 +386,43 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public void onDestroy() {
         super.onDestroy();
 
-
         // code of other listview which you want to clear
     }
 
     private void displayNotification() {
 
+        PendingIntent resultPendingIntent;
         mbuilder.setSmallIcon(R.drawable.applogo);
-        mbuilder.setContentTitle("Vehicle Speed Limiter is running...");
+        mbuilder.setContentTitle("MySpeedLimiter is running...");
         mbuilder.setContentText("Click to view");
 
         Intent resultIntent = new Intent(this, MainActivity.class);
         resultIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
-        TaskStackBuilder stackBuilder = null;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             stackBuilder = TaskStackBuilder.create(this);
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             stackBuilder.addParentStack(MainActivity.class);
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             stackBuilder.addNextIntent(resultIntent);
         }
 
-        PendingIntent resultPendingIntent = null;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
+        resultPendingIntent =
+                stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
         }
         mbuilder.setContentIntent(resultPendingIntent);
 
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        notificationManager.notify(1337, mbuilder.build());
 
-        mnotice.notify(1337, mbuilder.build());
+
+        //mnotice.notify(1337, mbuilder.build());
 
 
     }
@@ -393,8 +430,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void removeNotification() {
         mnotice.cancel(1337);
     }
-
-
 
 
     private class SpeedTask extends AsyncTask<String, Void, String> {
@@ -424,30 +459,27 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 //            limitSpeed = Integer.parseInt(tvSpeedLimit.getText().toString());
 
             LocationListener listener = new LocationListener() {
-                float filtSpeed;
                 float localspeed;
 
                 @Override
                 public void onLocationChanged(Location location) {
 
-                    if(counts==0) {//If the counter is 0 which means it is the first time that the location has changed
+                    if (counts == 0) {//If the counter is 0 which means it is the first time that the location has changed
                         start = System.nanoTime();//a timer starts
-                        lat1 = location.getLatitude();//the coordinates are saved
-                        lon1 = location.getLongitude();
+                        lat1 = 26.7320652226;//the coordinates are saved
+                        lon1 = 87.6620763028;
+
                         distance = 0;//I initialize the distance
                         //alt1 = location.getAltitude();//this would also save the altitude
-                        counts +=1;
-                    }
-
-                    else if (counts == 5) {//if the location has changed 5 times (I choose 5 times nad not 0 in order for the calculations to be less)
+                        counts += 1;
+                    } else if (counts == 5) {//if the location has changed 5 times (I choose 5 times nad not 0 in order for the calculations to be less)
                         finish = System.nanoTime();//I finish the timer
                         lat2 = location.getLatitude();
                         lon2 = location.getLongitude();
                         time = finish - start;//I save the time in nanoseconds
-                        time1 = (double)time / 1_000_000_000.0;//I convert time in seconds
+                        time1 = (double) time / 1_000_000_000.0;//I convert time in seconds
                         distance = distance + measureDistance(lat1, lat2, lon1, lon2);
                         speed = location.getSpeed();
-                        float multiplier = 3.6f;
 
                         switch (unitType) {
                             case 1:
@@ -545,20 +577,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         NumberFormat nf = NumberFormat.getInstance();
 
                         nf.setMaximumFractionDigits(4);
-
-
                         start = 0;//restart time and counter
                         finish = 0;
-                        counts=0;
-                    }
-
-                    else{
+                        counts = 0;
+                    } else {
                         lat2 = location.getLatitude();
                         lon2 = location.getLongitude();
-                        distance = distance + measureDistance(lat1,lat2,lon1,lon2);//i calculate the distance travelled
-                        lat1 = lat2;
-                        lon1 = lon2;
-                        counts +=1;
+                        boolean speed3 = location.hasSpeed();
+                        distance = distance + measureDistance(lat1, lat2, lon1, lon2);//i calculate the distance travelled
+                       /* lat1 = lat2;
+                        lon1 = lon2;*/
+                        counts += 1;
                     }
 
                 }
@@ -626,92 +655,133 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
 
-    public void checkSpeed(Double latitude, Double longitude, int speed) {//custom method that checks if we exceeded speed limit
-        speed = Integer.parseInt(tvMaxSpeed.getText().toString());
+    //custom method that checks if we exceeded speed limit
+    public void checkSpeed(Double latitude, Double longitude, int speed) {
+        speed = Integer.parseInt(tvSpeed.getText().toString());
         //limitSpeed = Integer.parseInt(tvSpeedLimit.getText().toString());
         int limit = Integer.parseInt(tvSpeedLimit.getText().toString());
+
+        final Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+        final long[] vibe = {0, 500};
+        final Uri notificationsound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        /*MediaPlayer player = MediaPlayer.create(this, notificationsound);
+        Ringtone ring = RingtoneManager.getRingtone(getApplicationContext(), notificationsound);*/
 
         if (speed > limit && above == false) {
             above = true;
             String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
-             try {
+            try {
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
+
+                Calendar calendar = Calendar.getInstance();
+
+                SimpleDateFormat currentDate = new SimpleDateFormat("MMM dd, yyyy");
+                String saveCurrentDate = currentDate.format(calendar.getTime());
+
+                SimpleDateFormat currentTime = new SimpleDateFormat("hh:mm a");
+                String saveCurrentTime = currentTime.format(calendar.getTime());
                 Date parsedDate = dateFormat.parse(timeStamp);
                 Timestamp timestamp = new java.sql.Timestamp(parsedDate.getTime());
                 Toast.makeText(this, "You exceeded speed limit at " + timestamp, Toast.LENGTH_LONG).show();
-                final Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+                Toast.makeText(this, "Please slow down!!!", Toast.LENGTH_LONG).show();
                 final long[] pattern = {2000, 1000};
-                vibrator.vibrate(pattern, -1);// 0 mean repeat forever, -1 not repeat
+                vibrator.vibrate(pattern, 0);// 0 mean repeat forever, -1 not repeat
 
-                 String violation = "Speed limit was violated at " + timeStamp +"." + speed + "km/hr was achieved when speed limit was " + limit;
+                String violation = "Speed limit was violated at " + saveCurrentDate + " on " + saveCurrentTime + ". " + speed + "km/hr was achieved when speed limit was " + limit;
+
+                String CHANNEL_ID = "my_channel_01";// The id of the channel.
+                NotificationManager notificationManager = (NotificationManager)
+                        getSystemService(NOTIFICATION_SERVICE);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    CharSequence name = "Channel Name";// The user-visible name of the channel.
+                    int importance = NotificationManager.IMPORTANCE_HIGH;
+                    NotificationChannel mChannel = new NotificationChannel(CHANNEL_ID, name, importance);
+                    notificationManager.createNotificationChannel(mChannel);
+                }
+
+                //Notification showing when crossing the speed limit
+                NotificationCompat.Builder mbuilder = (NotificationCompat.Builder)
+                        new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
+                                .setSmallIcon(R.drawable.applogo, 10)
+                                .setSound(notificationsound)
+                                .setVibrate(vibe)
+                                .setStyle(new NotificationCompat.BigTextStyle()
+                                        .bigText(violation))
+                                .setContentTitle("OverSpeed Warning!!")
+                                .setContentText(violation);
+
+                notificationManager.notify(1, mbuilder.build());
 
                 //inseting into firebase
-                 rootNode = FirebaseDatabase.getInstance();
-                 firebaseAuth = FirebaseAuth.getInstance();
-                 FirebaseUser  rUser = firebaseAuth.getCurrentUser();
-                 String userId = rUser.getUid();
-                 String email = rUser.getEmail();
-                 countreference = rootNode.getReference().child("SpeedCrossed").child(userId);
+                rootNode = FirebaseDatabase.getInstance();
+                firebaseAuth = FirebaseAuth.getInstance();
+                FirebaseUser rUser = firebaseAuth.getCurrentUser();
+                String userId = rUser.getUid();
+                String email = rUser.getEmail();
+                countreference = rootNode.getReference().child("SpeedCrossed").child(userId);
 
-                 assert rUser != null;
-                 HashMap<String, String> hashMap = new HashMap<>();
-                 hashMap.put("userId", userId);
-                 hashMap.put("violation", violation);
-                 hashMap.put("email", email);
+                assert rUser != null;
+                HashMap<String, String> hashMap = new HashMap<>();
+                hashMap.put("userId", userId);
+                hashMap.put("violation", violation);
+                hashMap.put("email", email);
 
-               countreference.push().setValue(hashMap);
+                countreference.push().setValue(hashMap);
 //                reference.setValue(overSpeedHelperClass);
 
 
-
-             } catch (Exception e) {
+            } catch (Exception e) {
             }
-
 
 
         } else if (speed < limit && above == true)
             above = false;
+            final long[] pattern = {2000, 1000};
+            vibrator.vibrate(pattern, -1);
 
     }
 
+    //retriving the speed limit set
     private void countViolation() {
         firebaseAuth = FirebaseAuth.getInstance();
-        currentuserid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        countreference = FirebaseDatabase.getInstance().getReference().child("SpeedCrossed");
-        countreference.child(currentuserid).addValueEventListener(new ValueEventListener() {
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            currentuserid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            countreference = FirebaseDatabase.getInstance().getReference().child("SpeedCrossed");
+            countreference.child(currentuserid).addValueEventListener(new ValueEventListener() {
 
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                countSpeed = (int) snapshot.getChildrenCount();
-                tvOverSpeed.setText(Integer.toString(countSpeed));
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    countSpeed = (int) snapshot.getChildrenCount();
+                    tvOverSpeed.setText(Integer.toString(countSpeed));
 
-            }
+                }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
 
-            }
-        });
+                }
+            });
+        }
     }
 
+
     private boolean isLocationEnabled(Context mContext) {
-
-
         LocationManager locationManager = (LocationManager)
                 mContext.getSystemService(Context.LOCATION_SERVICE);
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
     }
 
-    public double measureDistance(Double lat1, Double lat2, Double lon1, Double lon2) {//custom method that calculates distance between two points
+    //custom method that calculates distance between two points
+    public double measureDistance(Double lat1, Double lat2, Double lon1, Double lon2) {
         //Haversine Formula for calculating distance betwwen two location
         /**
          * This is the implementation Haversine Distance Algorithm between two places
          * R = earth’s radius (mean radius = 6,371km)
-        Δlat = lat2− lat1
-        Δlong = long2− long1
-        a = sin²(Δlat/2) + cos(lat1).cos(lat2).sin²(Δlong/2)
-        c = 2.atan2(√a, √(1−a))
-        d = R.c
+         Δlat = lat2− lat1
+         Δlong = long2− long1
+         a = sin²(Δlat/2) + cos(lat1).cos(lat2).sin²(Δlong/2)
+         c = 2.atan2(√a, √(1−a))
+         d = R.c
          *
          */
         final int R = 6371; // Radius of the earth
@@ -722,80 +792,90 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
                 Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        double distance = R * c * 1000 *0.001; // convert to meters
-        String dist = String.format("%.2f", distance);
+        double distance = R * c * 1000 * 0.001; // convert to meters
+        double dist1 = distance * multiplier;
+        String dist = String.format("%.2f", dist1);
 
 
         //inseting into firebase
         rootNode = FirebaseDatabase.getInstance();
         firebaseAuth = FirebaseAuth.getInstance();
-        FirebaseUser  rUser = firebaseAuth.getCurrentUser();
-        String userId = rUser.getUid();
-        distreference = rootNode.getReference().child("Distance").child(userId);
-        assert rUser != null;
-        HashMap<String, String> hashMap = new HashMap<>();
-        hashMap.put("userid", userId);
-        hashMap.put("distance", dist);
+        FirebaseUser rUser = firebaseAuth.getCurrentUser();
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            String userId = rUser.getUid();
+            distreference = rootNode.getReference().child("Distance").child(userId);
+            assert rUser != null;
+            HashMap<String, String> hashMap = new HashMap<>();
+            hashMap.put("userid", userId);
+            hashMap.put("distance", dist);
 
-        distreference.setValue(hashMap);
+            distreference.setValue(hashMap);
 
-        distreference.addValueEventListener(new ValueEventListener() {
+            distreference.addValueEventListener(new ValueEventListener() {
 
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
                     String Tdis = snapshot.child("distance").getValue().toString();
-                    txtdistance.setText(Tdis);
-            }
+                    txtdistance.setText(Tdis + unitType);
+                }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
 
-            }
-        });
+                }
+            });
+        }
         return distance;
     }
+
+    //coverting degree to Radians
     public double toRadians(double deg) {
         return deg * (Math.PI / 180);
     }
 
-    public  double getTime(Double dist, Double maxSpeed){
-        double time = dist/maxSpeed;
+    //custom method for calculating the average speed
+    public double getTime(Double dist, Double maxSpeed) {
+        double time = dist / maxSpeed;
 
         double avg = dist / time;
-        String avgsp = String.format("%.2f", avg);
+        double avg1 = avg *multiplier;
+        String avgsp = String.format("%.2f", avg1);
 
         //inseting into firebase
         rootNode = FirebaseDatabase.getInstance();
         firebaseAuth = FirebaseAuth.getInstance();
-        FirebaseUser  rUser = firebaseAuth.getCurrentUser();
-        String userId = rUser.getUid();
-        avgreference = rootNode.getReference().child("AverageSpeed").child(userId);
-        assert rUser != null;
-        HashMap<String, String> hashMap = new HashMap<>();
-        hashMap.put("userid", userId);
-        hashMap.put("AvgSpeed", avgsp);
+        FirebaseUser rUser = firebaseAuth.getCurrentUser();
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            String userId = rUser.getUid();
+            avgreference = rootNode.getReference().child("AverageSpeed").child(userId);
+            assert rUser != null;
+            HashMap<String, String> hashMap = new HashMap<>();
+            hashMap.put("userid", userId);
+            hashMap.put("AvgSpeed", avgsp);
 
-        avgreference.setValue(hashMap);
+            avgreference.setValue(hashMap);
 
 
-        avgreference.addValueEventListener(new ValueEventListener() {
+            avgreference.addValueEventListener(new ValueEventListener() {
 
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                String Tavg = snapshot.child("AvgSpeed").getValue().toString();
-                tvAvgSpeed.setText(Tavg);
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    String Tavg = snapshot.child("AvgSpeed").getValue().toString();
+                    tvAvgSpeed.setText(Tavg);
 
-            }
+                }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
 
-            }
-        });
+                }
+            });
+        }
         return time;
     }
 
 
+    //Closing drawer layout when placed in empty area
     public void onBackPressed() {
 
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
@@ -805,6 +885,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
+    //Function for selecting menu items
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
@@ -835,18 +916,26 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 startActivity(intent3);
                 break;
 
+            case  R.id.nav_reset:
+                Intent intent1 = new Intent(getApplicationContext(), RiderResetPasswordActivity.class);
+                startActivity(intent1);
+                break;
+
             case R.id.nav_logout:
                 FirebaseAuth.getInstance().signOut();
                 Intent intent4 = new Intent(MainActivity.this, UserSelect.class);
-                intent4.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
-                        Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent4);
-                finish();
                 Toast.makeText(MainActivity.this, "Logout Successfully", Toast.LENGTH_SHORT).show();
+                finish();
                 break;
 
 
             case R.id.nav_share:
+                Intent myIntent = new Intent(Intent.ACTION_SEND);
+                myIntent.setType("text/plain");
+                String sub = "Your Subject";
+                myIntent.putExtra(Intent.EXTRA_SUBJECT, sub);
+                startActivity(Intent.createChooser(myIntent, "Share Using"));
                 Toast.makeText(this, "Shared Successfully!", Toast.LENGTH_SHORT).show();
                 break;
 
@@ -859,15 +948,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return true;
     }
 
-
-
-
+    //Dialog box Form Function when clicked
     public void btn_showDialog(View view) {
 
         final AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
         View mView = getLayoutInflater().inflate(R.layout.speed_dialog, null);
 
-        final EditText txt_limit = (EditText) mView.findViewById(R.id.txt_limit);
+        txt_limit = (EditText) mView.findViewById(R.id.txt_limit);
         Button btn_cancel = (Button) mView.findViewById(R.id.btn_cancel);
         Button btn_ok = (Button) mView.findViewById(R.id.btn_ok);
 
@@ -887,20 +974,26 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onClick(View v) {
 
-                int limit = Integer.parseInt(txt_limit.getText().toString());
-                String lmt = String.valueOf(limit);
+                if (!validateLimit()) {
+                    return;
+                } else {
+                    int limit = Integer.parseInt(txt_limit.getText().toString());
 
-                firebaseAuth = FirebaseAuth.getInstance();
-                FirebaseUser rUser = firebaseAuth.getCurrentUser();
-                String userid = rUser.getUid();;
-                reference = FirebaseDatabase.getInstance().getReference("SpeedLimit").child(userid);
+                    String lmt = String.valueOf(limit);
 
-                assert rUser != null;
-                HashMap<String, String> hashMap = new HashMap<>();
-                hashMap.put("userid", userid);
-                hashMap.put("limit", lmt);
+                    firebaseAuth = FirebaseAuth.getInstance();
+                    FirebaseUser rUser = firebaseAuth.getCurrentUser();
+                    String userid = rUser.getUid();
+                    ;
+                    reference = FirebaseDatabase.getInstance().getReference("SpeedLimit").child(userid);
 
-                reference.setValue(hashMap);
+                    assert rUser != null;
+                    HashMap<String, String> hashMap = new HashMap<>();
+                    hashMap.put("userid", userid);
+                    hashMap.put("limit", lmt);
+                    reference.setValue(hashMap);
+
+                }
 
                 getdata();
                 alertDialog.dismiss();
@@ -908,13 +1001,36 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
 
 
-
-
         });
 
         alertDialog.show();
-
     }
+
+    //Validation of Speed limit form
+    private Boolean validateLimit() {
+        String val = txt_limit.getText().toString();
+        int val1 = Integer.parseInt(val);
+
+        if (val.isEmpty()) {
+            txt_limit.setError("Field cannot be empty");
+            return false;
+        }
+        /*else if (!val.equals(0)) {
+            txt_limit.setError("Speed limit cannot be 0");
+            return false;
+        }*/
+        else if ((val1 <= 1) | (val1 >= 100)) {
+            txt_limit.setError("Speed limit cannot be less than 0 or greater than 100");
+            return false;
+
+        } else {
+            txt_limit.setError(null);
+            //emailET.setErrorEnabled(false);
+            return true;
+        }
+    }
+
+    //Retriving data to the speed limit display
     private void getdata() {
         // calling add value event listener method
         // for getting the values from database.
@@ -943,16 +1059,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
     }
 
+
+    //Dialog box for saving the trip data
     public void btn_saveDialog(View view) {
 
         final AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
         View mView = getLayoutInflater().inflate(R.layout.save_dialog, null);
 
-        final EditText tripTitle = (EditText) mView.findViewById(R.id.tripTitle);
-        final EditText tripDes = (EditText) mView.findViewById(R.id.tripDes);
-
-
-        final ImageView imageViewAdd = mView.findViewById(R.id.trip_image);
+        tripTitle = (EditText) mView.findViewById(R.id.tripTitle);
+        tripDes = (EditText) mView.findViewById(R.id.tripDes);
 
         final TextView txtdistance1 = (TextView) mView.findViewById(R.id.txtdistance1);
         final TextView tvMaxSpeed1 = (TextView) mView.findViewById(R.id.tvMaxSpeed2);
@@ -981,33 +1096,37 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         btn_save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(MainActivity.this, "Trip Saved!", Toast.LENGTH_SHORT).show();
-                String tripT = tripTitle.getText().toString();
-                String tripD = tripDes.getText().toString();
-                String dist = txtdistance1.getText().toString();
-                String max = tvMaxSpeed1.getText().toString();
-                String avg = tvAvgSpeed1.getText().toString();
-                String loc = tvOverSpeed1.getText().toString();
+                if (!validateTrip() | !validateDes()) {
+                    return;
+                } else {
+                    String tripT = tripTitle.getText().toString();
+                    String tripD = tripDes.getText().toString();
+                    String dist = txtdistance1.getText().toString();
+                    String max = tvMaxSpeed1.getText().toString();
+                    String avg = tvAvgSpeed1.getText().toString();
+                    String loc = tvOverSpeed1.getText().toString();
 
-                rootNode = FirebaseDatabase.getInstance();
-                firebaseAuth = FirebaseAuth.getInstance();
-                FirebaseUser rUser = firebaseAuth.getCurrentUser();
-                String userId = rUser.getUid();
-                savereference  = rootNode.getReference("TravelLog").child(userId);
+                    rootNode = FirebaseDatabase.getInstance();
+                    firebaseAuth = FirebaseAuth.getInstance();
+                    FirebaseUser rUser = firebaseAuth.getCurrentUser();
+                    String userId = rUser.getUid();
+                    savereference = rootNode.getReference("TravelLog").child(userId);
 
-                assert rUser != null;
-                HashMap<String, String> hashMap = new HashMap<>();
-                hashMap.put("userId", userId);
-                hashMap.put("tripT", tripT);
-                hashMap.put("tripD", tripD);
-                hashMap.put("dist", dist);
-                hashMap.put("max", max);
-                hashMap.put("avg", avg);
-                hashMap.put("loc", loc);
+                    assert rUser != null;
+                    HashMap<String, String> hashMap = new HashMap<>();
+                    hashMap.put("userId", userId);
+                    hashMap.put("tripT", tripT);
+                    hashMap.put("tripD", tripD);
+                    hashMap.put("dist", dist);
+                    hashMap.put("max", max);
+                    hashMap.put("avg", avg);
+                    hashMap.put("loc", loc);
 
-                savereference.push().setValue(hashMap);
+                    savereference.push().setValue(hashMap);
 
-            alertDialog.dismiss();
+                    Toast.makeText(MainActivity.this, "Trip Saved!", Toast.LENGTH_SHORT).show();
+                }
+                alertDialog.dismiss();
 
             }
         });
@@ -1015,10 +1134,35 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         alertDialog.show();
     }
 
-    public void btn_resetDialog(View view){
+    //Validation of Speed limit form
+    private Boolean validateTrip() {
+        String val = tripTitle.getText().toString();
 
+        if (val.isEmpty()) {
+            tripTitle.setError("Title field cannot be empty");
+            return false;
+        } else if (val.length() > 20) {
+            tripTitle.setError("Title length must not exceed length of 20 characters");
+            return false;
+        } else {
+            tripTitle.setError(null);
+            //emailET.setErrorEnabled(false);
+            return true;
+        }
     }
 
+    private Boolean validateDes() {
+        String val = tripDes.getText().toString();
+
+        if (val.isEmpty()) {
+            tripDes.setError("Description field cannot be empty");
+            return false;
+        } else {
+            tripDes.setError(null);
+            //emailET.setErrorEnabled(false);
+            return true;
+        }
+    }
 
 
 }
