@@ -99,6 +99,7 @@
                         android:layout_alignParentRight="true"
                         android:layout_gravity="right"
                         android:layout_margin="0dp"
+                        android:inputType="number"
                         android:text="0/100" />
 
                 </RelativeLayout>

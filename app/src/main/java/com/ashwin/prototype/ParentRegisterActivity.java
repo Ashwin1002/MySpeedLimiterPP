@@ -104,6 +104,7 @@ public class ParentRegisterActivity extends AppCompatActivity {
                     hashMap.put("username", username);
                     hashMap.put("email", email);
                     hashMap.put("phoneno", phoneno);
+                    hashMap.put("role", "Parent");
 //                    hashMap.put("password", password);
 
                     reference1.setValue(hashMap).addOnCompleteListener(new OnCompleteListener<Void>() {

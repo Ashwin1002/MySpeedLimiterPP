@@ -38,7 +38,8 @@ public class RiderLoginActivity extends AppCompatActivity {
     Button navRegister;
     EditText txtLoginEmail, txtLoginPassword;
     Button customer_login;
-    DatabaseReference reference1;
+    DatabaseReference reference;
+    String currentUserUID;
     ProgressDialog progressDialog;
     private FirebaseAuth firebaseAuth;
     TextView ForgotPass;
@@ -140,12 +141,37 @@ public class RiderLoginActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()) {
-                    Intent intent = new Intent(RiderLoginActivity.this, MainActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
-                    Toast.makeText(RiderLoginActivity.this, "Logged In Successfully!", Toast.LENGTH_SHORT).show();
-                    finish();
-                    progressDialog.dismiss();
+                    try {
+                        currentUserUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                    } catch (Throwable throwable) {
+                        throwable.printStackTrace();
+                    }
+                    reference = FirebaseDatabase.getInstance().getReference().child("Rider").child(currentUserUID).child("role");
+                    reference.addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            try{
+                                String username = snapshot.getValue().toString();
+                                if(username.equals("Rider")){
+                                    Intent intent = new Intent(RiderLoginActivity.this, MainActivity.class);
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    startActivity(intent);
+                                    Toast.makeText(RiderLoginActivity.this, "Logged In Successfully!", Toast.LENGTH_SHORT).show();
+                                    finish();
+                                }
+
+                            }
+                            catch (Throwable e){
+                                progressDialog.dismiss();
+                                Toast.makeText(getApplicationContext(), "Invalid User!, Not a Rider", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+                            Toast.makeText(getApplicationContext(), "Database Error!", Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 } else {
                     progressDialog.dismiss();
                     Toast.makeText(RiderLoginActivity.this, "Email and Password do not Match!", Toast.LENGTH_SHORT).show();

@@ -180,8 +180,6 @@ public class Notifications extends AppCompatActivity {
                         holder.setEmail(model.getemail());
                         holder.setViolation(model.getviolation());
 
-
-
                     }
 
                     @NonNull

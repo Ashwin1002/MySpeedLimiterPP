@@ -179,6 +179,7 @@ public class AddUserActivity extends AppCompatActivity implements NavigationView
                     hashMap.put("email", email);
                     hashMap.put("phoneno", phoneno);
 //                    hashMap.put("password", password);
+                    hashMap.put("role", "Rider");
                     hashMap.put("parentid", userId);
 
                     userRef = FirebaseDatabase.getInstance().getReference("Rider").child(riderid);

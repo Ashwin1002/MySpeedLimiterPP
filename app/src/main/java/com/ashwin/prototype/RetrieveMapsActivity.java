@@ -67,21 +67,25 @@ public class RetrieveMapsActivity extends FragmentActivity implements OnMapReady
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
 
-                String latitude1 = snapshot.child("Latitude").getValue().toString();
-                String longitude1 = snapshot.child("Longitude").getValue().toString();
-                String address1 = snapshot.child("Addressline").getValue().toString();
-                Log.d("com.ashwin.prototype", "Lat" + latitude1 + "Lon: " + longitude1);
+                if (!snapshot.exists()) {
+                    Toast.makeText(getApplicationContext(), "Rider has not share their location!", Toast.LENGTH_SHORT).show();
+                } else {
+                    String latitude1 = snapshot.child("Latitude").getValue().toString();
+                    String longitude1 = snapshot.child("Longitude").getValue().toString();
+                    String address1 = snapshot.child("Addressline").getValue().toString();
+                    Log.d("com.ashwin.prototype", "Lat" + latitude1 + "Lon: " + longitude1);
 
 
-                Double latitude = Double.parseDouble(latitude1);
-                Double longitude = Double.parseDouble(longitude1);
+                    Double latitude = Double.parseDouble(latitude1);
+                    Double longitude = Double.parseDouble(longitude1);
+                    LatLng location = new LatLng(latitude, longitude);
+                    Toast.makeText(RetrieveMapsActivity.this, "UserId:" + receiverUserID + "lat: " + latitude + "lon: " + longitude, Toast.LENGTH_SHORT).show();
 
-                LatLng location = new LatLng(latitude, longitude);
-                Toast.makeText(RetrieveMapsActivity.this, "UserId:" +receiverUserID + "lat: " + latitude + "lon: " + longitude, Toast.LENGTH_SHORT).show();
-
-                mMap.addMarker(new MarkerOptions().position(location).title("Last Known Location: "+address1));
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15F));
+                    mMap.addMarker(new MarkerOptions().position(location).title("Last Known Location: " + address1));
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15F));
+                }
             }
+
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {

@@ -105,6 +105,7 @@ public class RiderRegisterActivity extends AppCompatActivity {
                     hashMap.put("username", username);
                     hashMap.put("email", email);
                     hashMap.put("phoneno", phoneno);
+                    hashMap.put("role", "Rider");
 
                     reference.setValue(hashMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override

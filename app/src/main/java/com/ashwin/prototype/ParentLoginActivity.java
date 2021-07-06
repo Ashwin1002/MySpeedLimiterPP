@@ -1,8 +1,5 @@
 package com.ashwin.prototype;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -18,6 +15,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -25,25 +25,28 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 public class ParentLoginActivity extends AppCompatActivity {
 
     Button navRegister;
-    EditText txtLoginEmail,txtLoginPassword;
+    EditText txtLoginEmail, txtLoginPassword;
     Button customer_login;
     private FirebaseAuth firebaseAuth;
+    FirebaseUser firebaseUser;
     DatabaseReference reference;
     ProgressDialog progressDialog;
+    String currentUserUID;
 
     TextView ForgotPass;
     AlertDialog.Builder reset_alert;
     LayoutInflater inflater;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,12 +88,10 @@ public class ParentLoginActivity extends AppCompatActivity {
                 final String userEnteredPassword = txtLoginPassword.getText().toString().trim();
                 if (txtLoginEmail.getText().toString().equalsIgnoreCase("")) {
                     txtLoginEmail.setError("Email field cannot be Empty");
-                } else if(txtLoginPassword.getText().toString().equalsIgnoreCase("")) {
+                } else if (txtLoginPassword.getText().toString().equalsIgnoreCase("")) {
                     txtLoginPassword.setError("Password field cannot be Empty");
-                }else {
-
+                } else {
                     login(userEnteredUsername, userEnteredPassword);
-
                 }
             }
         });
@@ -106,7 +107,7 @@ public class ParentLoginActivity extends AppCompatActivity {
                             public void onClick(DialogInterface dialog, int which) {
                                 //validate the email address
                                 EditText email = view.findViewById(R.id.reset_email_pop);
-                                if (email.getText().toString().isEmpty()){
+                                if (email.getText().toString().isEmpty()) {
                                     email.setError("Email required");
                                     return;
                                 }
@@ -114,12 +115,12 @@ public class ParentLoginActivity extends AppCompatActivity {
                                 firebaseAuth.sendPasswordResetEmail(email.getText().toString()).addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void aVoid) {
-                                        Toast.makeText(ParentLoginActivity.this, "Reset link sent. Please check your email!!",Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(ParentLoginActivity.this, "Reset link sent. Please check your email!!", Toast.LENGTH_SHORT).show();
                                     }
                                 }).addOnFailureListener(new OnFailureListener() {
                                     @Override
                                     public void onFailure(@NonNull Exception e) {
-                                        Toast.makeText(ParentLoginActivity.this,"Invalid Email", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(ParentLoginActivity.this, "Invalid Email", Toast.LENGTH_SHORT).show();
                                     }
                                 });
                             }
@@ -133,13 +134,40 @@ public class ParentLoginActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()) {
+                    try {
+                        currentUserUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                    } catch (Throwable throwable) {
+                        throwable.printStackTrace();
+                    }
 
-                    Intent intent = new Intent(ParentLoginActivity.this, ParentDashboard.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                    Toast.makeText(ParentLoginActivity.this, "Logged In Successfully!", Toast.LENGTH_SHORT).show();
-                    startActivity(intent);
-                    finish();
-                }else {
+                    reference = FirebaseDatabase.getInstance().getReference().child("Parent").child(currentUserUID).child("role");
+                    reference.addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            try{
+                                String username = snapshot.getValue().toString();
+                                if(username.equals("Parent")){
+                                    Intent intent = new Intent(ParentLoginActivity.this, ParentDashboard.class);
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    Toast.makeText(ParentLoginActivity.this, "Logged In Successfully!", Toast.LENGTH_SHORT).show();
+                                    startActivity(intent);
+                                    finish();
+                                }
+
+                            }
+                            catch (Throwable e){
+                                progressDialog.dismiss();
+                                Toast.makeText(getApplicationContext(), "Invalid User!, Not a Parent", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+                            Toast.makeText(getApplicationContext(), "Database Error!", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+                } else {
                     progressDialog.dismiss();
                     Toast.makeText(ParentLoginActivity.this, "User Email or Password do not Match!", Toast.LENGTH_SHORT).show();
                 }
@@ -163,8 +191,8 @@ public class ParentLoginActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         //directly redirect to mainactivity
-        if (FirebaseAuth.getInstance().getCurrentUser() != null){
-            startActivity(new Intent(getApplicationContext(),ParentDashboard.class));
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            startActivity(new Intent(getApplicationContext(), ParentDashboard.class));
             finish();
         }
     }
